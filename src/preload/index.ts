@@ -20,6 +20,7 @@ const api = {
   onJobUpdate: (callback: (job: unknown) => void) => {
     const handler = (_: unknown, job: unknown) => callback(job)
     ipcRenderer.on(IPC_CHANNELS.ON_JOB_UPDATE, handler)
+    ipcRenderer.send(IPC_CHANNELS.ON_JOB_UPDATE)
     return () => ipcRenderer.removeListener(IPC_CHANNELS.ON_JOB_UPDATE, handler)
   },
 
