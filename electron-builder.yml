@@ -1,0 +1,30 @@
+appId: com.tuempresa.halftone-rip
+productName: Halftone RIP Pro
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**/*
+  - resources/**/*
+  - package.json
+win:
+  target:
+    - target: nsis
+      arch: x64
+    - target: portable
+      arch: x64
+  fileAssociations:
+    - ext: ps
+      name: PostScript File
+      role: Editor
+    - ext: eps
+      name: EPS File
+      role: Editor
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Halftone RIP Pro
+portable:
+  artifactName: HalftoneRIPPro-${version}-portable.exe

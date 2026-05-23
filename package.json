@@ -1,0 +1,80 @@
+{
+  "name": "halftone-rip-pro",
+  "version": "1.0.0",
+  "description": "Separador textil profesional PS/PDF → PDF multipágina con semitonos",
+  "main": "./out/main/index.js",
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "postinstall": "electron-builder install-app-deps",
+    "setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-dev-env.ps1",
+    "check": "powershell -ExecutionPolicy Bypass -File scripts/check-prerequisites.ps1",
+    "install:gs": "powershell -ExecutionPolicy Bypass -File scripts/install-ghostscript.ps1",
+    "release:win": "powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.0.0",
+    "electron-vite": "^2.0.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0",
+    "vite-plugin-electron": "^0.29.1"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "p-queue": "^8.0.0",
+    "pdf-lib": "^1.17.1",
+    "sharp": "^0.33.0"
+  },
+  "build": {
+    "appId": "com.tuempresa.halftone-rip",
+    "productName": "Halftone RIP Pro",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "fileAssociations": [
+        {
+          "ext": "ps",
+          "name": "PostScript File",
+          "role": "Editor"
+        },
+        {
+          "ext": "eps",
+          "name": "EPS File",
+          "role": "Editor"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

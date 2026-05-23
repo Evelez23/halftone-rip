@@ -1,0 +1,16 @@
+node_modules/
+out/
+release/
+logs/*.jsonl
+temp/*
+output/*
+*.log
+.DS_Store
+.env
+.vscode/
+.idea/
+*.tiff
+*.tif
+*.png
+!resources/presets/*.json
+!resources/icc/*.icc

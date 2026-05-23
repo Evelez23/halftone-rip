@@ -1,0 +1,77 @@
+[
+  {
+    "id": "standard-plastisol",
+    "name": "Standard Plastisol",
+    "description": "Configuración equilibrada para algodón estándar con tinta plastisol. El punto de partida para el 80% de los trabajos.",
+    "category": "standard",
+    "config": {
+      "lpi": 45,
+      "dpi": 300,
+      "angle": 22.5,
+      "dotShape": "round",
+      "autoAngles": true,
+      "simulateSpot": true,
+      "presetName": "standard-plastisol"
+    }
+  },
+  {
+    "id": "fine-detail",
+    "name": "Fine Detail",
+    "description": "Alta lineatura para microdetalles, textos pequeños y trabajos que requieren máxima definición.",
+    "category": "standard",
+    "config": {
+      "lpi": 65,
+      "dpi": 400,
+      "angle": 22.5,
+      "dotShape": "ellipse",
+      "autoAngles": true,
+      "simulateSpot": true,
+      "presetName": "fine-detail"
+    }
+  },
+  {
+    "id": "white-underbase",
+    "name": "White Underbase",
+    "description": "Base blanca optimizada con choke de 2px para prendas oscuras. Genera canal de underbase automáticamente.",
+    "category": "underbase",
+    "config": {
+      "lpi": 35,
+      "dpi": 300,
+      "angle": 15,
+      "dotShape": "round",
+      "autoAngles": false,
+      "simulateSpot": true,
+      "presetName": "white-underbase"
+    }
+  },
+  {
+    "id": "athletic-jersey",
+    "name": "Athletic Jersey",
+    "description": "Optimizado para poliéster y malla deportiva. Mayor deposito de tinta para mejor cobertura en tejidos sintéticos.",
+    "category": "specialty",
+    "config": {
+      "lpi": 40,
+      "dpi": 300,
+      "angle": 22.5,
+      "dotShape": "round",
+      "autoAngles": true,
+      "simulateSpot": true,
+      "presetName": "athletic-jersey"
+    }
+  },
+  {
+    "id": "vintage-print",
+    "name": "Vintage Print",
+    "description": "Efecto desgastado con baja lineatura. Ideal para estética retro y prendas con lavado ácido.",
+    "category": "specialty",
+    "config": {
+      "lpi": 35,
+      "dpi": 200,
+      "angle": 22.5,
+      "dotShape": "round",
+      "autoAngles": true,
+      "simulateSpot": true,
+      "presetName": "vintage-print"
+    }
+  }
+]
