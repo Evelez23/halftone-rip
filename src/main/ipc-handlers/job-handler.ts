@@ -1,7 +1,18 @@
-import { ipcMain } from 'electron'
+import { ipcMain, WebContents } from 'electron'
 import { IPC_CHANNELS, Job, JobConfig } from '@shared/types'
 import { jobQueue } from '@main/services/job-queue'
 import { logger } from '@main/services/logger'
+
+const jobUpdateUnsubscribers = new Map<number, () => void>()
+
+function cleanupJobUpdateSubscription(webContents: WebContents): void {
+  const key = webContents.id
+  const existing = jobUpdateUnsubscribers.get(key)
+  if (existing) {
+    existing()
+    jobUpdateUnsubscribers.delete(key)
+  }
+}
 
 export function registerJobHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.START_JOB, async (_, filePath: string, presetId: string, configOverride?: Partial<JobConfig>) => {
@@ -29,11 +40,18 @@ export function registerJobHandlers(): void {
 
   // Notificaciones en tiempo real
   ipcMain.on(IPC_CHANNELS.ON_JOB_UPDATE, (event) => {
+    cleanupJobUpdateSubscription(event.sender)
+
     const unsubscribe = jobQueue.onUpdate((job) => {
-      event.sender.send(IPC_CHANNELS.ON_JOB_UPDATE, job)
+      if (!event.sender.isDestroyed()) {
+        event.sender.send(IPC_CHANNELS.ON_JOB_UPDATE, job)
+      }
     })
 
-    // Limpieza cuando el renderer se desconecta
-    event.sender.on('destroyed', unsubscribe)
+    jobUpdateUnsubscribers.set(event.sender.id, unsubscribe)
+
+    event.sender.once('destroyed', () => {
+      cleanupJobUpdateSubscription(event.sender)
+    })
   })
 }

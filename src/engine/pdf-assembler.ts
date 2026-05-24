@@ -1,7 +1,15 @@
-import { PDFDocument, PDFPage, PDFImage, PDFName, PDFDict, PDFArray, PDFNumber, PDFString } from 'pdf-lib'
+import { PDFDocument, PDFName, PDFDict, PDFNumber, PDFString, rgb } from 'pdf-lib'
 import fs from 'fs'
 import { ProcessedPage } from '@shared/types'
 import { logger } from '@main/services/logger'
+
+
+function isBlankChannel(data: Buffer): boolean {
+  for (let i = 0; i < data.length; i++) {
+    if (data[i] !== 255) return false
+  }
+  return true
+}
 
 export interface PdfAssemblyOptions {
   pages: ProcessedPage[]
@@ -52,6 +60,8 @@ export async function assembleMultiPagePdf(options: PdfAssemblyOptions): Promise
   ripMeta.set(PDFName.of('DPI'), PDFNumber.of(metadata.dpi))
 
   // Para cada página del documento original
+  let skippedBlankChannels = 0
+
   for (const page of pages) {
     const { width, height, channels, pageNumber } = page
     const pageWidthPts = (width / metadata.dpi) * 72
@@ -59,6 +69,11 @@ export async function assembleMultiPagePdf(options: PdfAssemblyOptions): Promise
 
     // Crear una página por canal
     for (const channel of channels) {
+      if (isBlankChannel(channel.data)) {
+        skippedBlankChannels++
+        continue
+      }
+
       const pdfPage = pdfDoc.addPage([pageWidthPts, pageHeightPts])
 
       // Incrustar imagen PNG del canal
@@ -77,7 +92,7 @@ export async function assembleMultiPagePdf(options: PdfAssemblyOptions): Promise
         x: 10,
         y: pageHeightPts - 20,
         size: 8,
-        color: { red: 0.5, green: 0.5, blue: 0.5 }
+        color: rgb(0.5, 0.5, 0.5)
       })
 
       // Información técnica
@@ -85,9 +100,19 @@ export async function assembleMultiPagePdf(options: PdfAssemblyOptions): Promise
         x: 10,
         y: 10,
         size: 6,
-        color: { red: 0.4, green: 0.4, blue: 0.4 }
+        color: rgb(0.4, 0.4, 0.4)
       })
     }
+  }
+
+  if (pdfDoc.getPageCount() === 0) {
+    const emptyPage = pdfDoc.addPage([595.28, 841.89])
+    emptyPage.drawText('Sin separaciones con tinta (todas las planchas en blanco).', {
+      x: 40,
+      y: 780,
+      size: 12,
+      color: rgb(0.2, 0.2, 0.2)
+    })
   }
 
   // Guardar
@@ -97,6 +122,7 @@ export async function assembleMultiPagePdf(options: PdfAssemblyOptions): Promise
   logger.info(jobId, 'pdf-assembler', 'PDF final guardado', {
     path: outputPath,
     size: pdfBytes.length,
-    totalPages: pdfDoc.getPageCount()
+    totalPages: pdfDoc.getPageCount(),
+    skippedBlankChannels
   })
 }

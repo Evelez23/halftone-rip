@@ -24,28 +24,22 @@ export class DropZone {
         <div class="drop-zone-icon">📁</div>
         <div class="drop-zone-text">Arrastra PDF, PS o EPS aquí</div>
         <div class="drop-zone-hint">o haz clic para seleccionar</div>
-        <input type="file" id="fileInput" accept=".pdf,.ps,.eps" style="display:none">
+        
       </div>
     `
   }
 
   private attachListeners(): void {
     const dropZone = this.container?.querySelector('#dropZone') as HTMLElement
-    const fileInput = this.container?.querySelector('#fileInput') as HTMLInputElement
-    if (!dropZone || !fileInput) return
+    if (!dropZone) return
 
-    // Click para abrir selector
-    dropZone.addEventListener('click', () => fileInput.click())
-    fileInput.addEventListener('change', (e) => {
-      const files = (e.target as HTMLInputElement).files
-      if (files && files.length > 0) {
-        // En Electron, usamos la API para abrir diálogo nativo
-        window.electronAPI.openFile().then(result => {
-          if (!result.canceled && result.filePath) {
-            this.options.onFileSelect?.(result.filePath)
-          }
-        })
-      }
+    // Click para abrir selector nativo de Electron
+    dropZone.addEventListener('click', () => {
+      window.electronAPI.openFile().then(result => {
+        if (!result.canceled && result.filePath) {
+          this.options.onFileSelect?.(result.filePath)
+        }
+      })
     })
 
     // Drag & drop nativo del sistema
@@ -62,7 +56,6 @@ export class DropZone {
 
       const files = e.dataTransfer?.files
       if (files && files.length > 0) {
-        // En Electron, los archivos del drop tienen path
         const file = files[0] as unknown as { path: string }
         if (file.path) {
           this.options.onFileDrop?.(file.path)
