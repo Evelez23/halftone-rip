@@ -94,6 +94,17 @@ export async function applyHalftoneToChannel(options: HalftoneOptions): Promise<
     angle = config.angle + 30 // spots a 30° del ángulo base
   }
 
+
+  const pxPerCell = config.dpi / config.lpi
+  if (pxPerCell < 12) {
+    logger.warn(jobId, 'halftone', 'Relación DPI/LPI baja: el punto puede verse cuadriculado', {
+      dpi: config.dpi,
+      lpi: config.lpi,
+      pxPerCell: Number(pxPerCell.toFixed(2)),
+      recommendedMinDpi: Math.ceil(config.lpi * 12)
+    })
+  }
+
   // Parámetros de semitono
   const scale = config.dpi / config.lpi
   const cellSize = Math.max(2, Math.round(scale))

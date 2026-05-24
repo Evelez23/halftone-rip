@@ -27,7 +27,7 @@ const DEFAULT_PRESETS: Preset[] = [
     category: 'standard',
     config: {
       lpi: 65,
-      dpi: 400,
+      dpi: 1200,
       angle: 22.5,
       dotShape: 'ellipse',
       autoAngles: true,
