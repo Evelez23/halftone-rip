@@ -4,7 +4,6 @@ import { JobConfig, HalftoneChannel } from '@shared/types'
 import { getJobTempDir } from '@main/utils/paths'
 import { logger } from '@main/services/logger'
 
-// Matriz Bayer 8x8 pre-calculada
 const BAYER_8 = [
   [ 0, 48, 12, 60,  3, 51, 15, 63],
   [32, 16, 44, 28, 35, 19, 47, 31],
@@ -16,7 +15,6 @@ const BAYER_8 = [
   [42, 26, 38, 22, 41, 25, 37, 21]
 ]
 
-// Cache de matrices rotadas
 const rotatedMatrices = new Map<number, Uint8Array>()
 
 function getRotatedMatrix(angle: number): Uint8Array {
@@ -63,10 +61,6 @@ export interface HalftoneOptions {
   isSpot?: boolean
 }
 
-/**
- * Aplica semitono ordenado (Ordered Dithering) a un canal separado.
- * Ghostscript ya hizo la separación; nosotros aplicamos la trama.
- */
 export async function applyHalftoneToChannel(options: HalftoneOptions): Promise<HalftoneChannel> {
   const { inputPath, jobId, channelName, config, isSpot = false } = options
 
@@ -77,23 +71,18 @@ export async function applyHalftoneToChannel(options: HalftoneOptions): Promise<
     shape: config.dotShape
   })
 
-  // Leer imagen con sharp
-  const { data, info } = await sharp(inputPath)
-    .raw()
-    .toBuffer({ resolveWithObject: true })
+  const meta = await sharp(inputPath, { limitInputPixels: false }).metadata()
+  const width = meta.width || 0
+  const height = meta.height || 0
+  if (!width || !height) throw new Error(`No se pudieron leer dimensiones del canal: ${inputPath}`)
 
-  const { width, height, channels } = info
-  const pixels = new Uint8Array(data)
-
-  // Calcular ángulo para este canal
   let angle = config.angle
   if (config.autoAngles && !isSpot) {
     const angles: Record<string, number> = { Cyan: 15, Magenta: 75, Yellow: 0, Black: 45 }
     angle = angles[channelName] || config.angle
   } else if (isSpot) {
-    angle = config.angle + 30 // spots a 30° del ángulo base
+    angle = config.angle + 30
   }
-
 
   const pxPerCell = config.dpi / config.lpi
   if (pxPerCell < 12) {
@@ -105,66 +94,56 @@ export async function applyHalftoneToChannel(options: HalftoneOptions): Promise<
     })
   }
 
-  // Parámetros de semitono
-  const scale = config.dpi / config.lpi
-  const cellSize = Math.max(2, Math.round(scale))
+  const cellSize = Math.max(2, Math.round(pxPerCell))
   const threshold = getRotatedMatrix(angle)
   const tSize = 8
-
-  // Procesar píxeles
   const out = new Uint8ClampedArray(width * height)
+  const tileSize = 1024
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = (y * width + x) * channels
-      // Tomar el primer canal (los TIFF de GS son grayscale en realidad)
-      const intensity = pixels[idx]
+  for (let y0 = 0; y0 < height; y0 += tileSize) {
+    const tileH = Math.min(tileSize, height - y0)
+    for (let x0 = 0; x0 < width; x0 += tileSize) {
+      const tileW = Math.min(tileSize, width - x0)
+      const tile = await sharp(inputPath, { limitInputPixels: false })
+        .extract({ left: x0, top: y0, width: tileW, height: tileH })
+        .greyscale()
+        .raw()
+        .toBuffer()
 
-      const tx = x % tSize
-      const ty = y % tSize
-      const thresholdVal = threshold[ty * tSize + tx] / 64
+      for (let ty = 0; ty < tileH; ty++) {
+        const y = y0 + ty
+        for (let tx = 0; tx < tileW; tx++) {
+          const x = x0 + tx
+          const intensity = tile[ty * tileW + tx]
 
-      const cx = (x % cellSize) / cellSize * 2 - 1
-      const cy = (y % cellSize) / cellSize * 2 - 1
-      const spot = getSpotFunction(config.dotShape, cx, cy)
+          if (intensity >= 250) {
+            out[y * width + x] = 255
+            continue
+          }
 
-      // Preserva blancos puros de separaciones vacías para evitar ruido de trama
-      if (intensity >= 250) {
-        out[y * width + x] = 255
-        continue
+          const thresholdVal = threshold[(y % tSize) * tSize + (x % tSize)] / 64
+          const cx = (x % cellSize) / cellSize * 2 - 1
+          const cy = (y % cellSize) / cellSize * 2 - 1
+          const spot = getSpotFunction(config.dotShape, cx, cy)
+          const adjustedThreshold = Math.max(0, Math.min(1, thresholdVal + spot * 0.15))
+          const normalizedIntensity = intensity / 255
+
+          out[y * width + x] = normalizedIntensity > adjustedThreshold ? 255 : 0
+        }
       }
-
-      const adjustedThreshold = Math.max(0, Math.min(1, thresholdVal + spot * 0.15))
-      const normalizedIntensity = intensity / 255
-
-      out[y * width + x] = normalizedIntensity > adjustedThreshold ? 255 : 0
     }
   }
 
-  // Convertir de vuelta a imagen
   const outputBuffer = Buffer.from(out)
   const tempDir = getJobTempDir(jobId)
   const outputPath = path.join(tempDir, `${path.basename(inputPath, path.extname(inputPath))}_${channelName}_halftone.png`)
 
-  await sharp(outputBuffer, {
-    raw: { width, height, channels: 1 }
-  })
-    .png()
-    .toFile(outputPath)
+  await sharp(outputBuffer, { raw: { width, height, channels: 1 } }).png().toFile(outputPath)
 
   logger.info(jobId, 'halftone', `Canal ${channelName} completado`, {
     output: outputPath,
     dimensions: `${width}x${height}`
   })
 
-  return {
-    name: channelName,
-    isSpot,
-    angle,
-    lpi: config.lpi,
-    data: outputBuffer,
-    width,
-    height,
-    filePath: outputPath
-  }
+  return { name: channelName, isSpot, angle, lpi: config.lpi, data: outputBuffer, width, height, filePath: outputPath }
 }
