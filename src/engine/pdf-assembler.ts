@@ -1,4 +1,4 @@
-import { PDFDocument, PDFPage, PDFImage, PDFName, PDFDict, PDFArray, PDFNumber, PDFString } from 'pdf-lib'
+import { PDFDocument, PDFName, PDFDict, PDFNumber, PDFString, rgb } from 'pdf-lib'
 import fs from 'fs'
 import { ProcessedPage } from '@shared/types'
 import { logger } from '@main/services/logger'
@@ -77,7 +77,7 @@ export async function assembleMultiPagePdf(options: PdfAssemblyOptions): Promise
         x: 10,
         y: pageHeightPts - 20,
         size: 8,
-        color: { red: 0.5, green: 0.5, blue: 0.5 }
+        color: rgb(0.5, 0.5, 0.5)
       })
 
       // Información técnica
@@ -85,7 +85,7 @@ export async function assembleMultiPagePdf(options: PdfAssemblyOptions): Promise
         x: 10,
         y: 10,
         size: 6,
-        color: { red: 0.4, green: 0.4, blue: 0.4 }
+        color: rgb(0.4, 0.4, 0.4)
       })
     }
   }
