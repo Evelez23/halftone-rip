@@ -117,7 +117,13 @@ export async function applyHalftoneToChannel(options: HalftoneOptions): Promise<
       const cy = (y % cellSize) / cellSize * 2 - 1
       const spot = getSpotFunction(config.dotShape, cx, cy)
 
-      const adjustedThreshold = thresholdVal + spot * 0.15
+      // Preserva blancos puros de separaciones vacías para evitar ruido de trama
+      if (intensity >= 250) {
+        out[y * width + x] = 255
+        continue
+      }
+
+      const adjustedThreshold = Math.max(0, Math.min(1, thresholdVal + spot * 0.15))
       const normalizedIntensity = intensity / 255
 
       out[y * width + x] = normalizedIntensity > adjustedThreshold ? 255 : 0
