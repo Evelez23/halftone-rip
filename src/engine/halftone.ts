@@ -133,7 +133,7 @@ export async function applyHalftoneToChannel(options: HalftoneOptions): Promise<
   // Convertir de vuelta a imagen
   const outputBuffer = Buffer.from(out)
   const tempDir = getJobTempDir(jobId)
-  const outputPath = path.join(tempDir, `${channelName}_halftone.png`)
+  const outputPath = path.join(tempDir, `${path.basename(inputPath, path.extname(inputPath))}_${channelName}_halftone.png`)
 
   await sharp(outputBuffer, {
     raw: { width, height, channels: 1 }
