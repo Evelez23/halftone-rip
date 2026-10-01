@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halftone RIP Pro — The Confidence Before Production</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --carbon:      #0a0a0a;
+            --charcoal:    #111111;
+            --steel:       #1a1a1a;
+            --iron:        #2a2a2a;
+            --graphite:    #3d3d3d;
+            --ember:       #e8520a;
+            --ember-soft:  rgba(232, 82, 10, 0.15);
+            --ember-glow:  rgba(232, 82, 10, 0.4);
+            --safety:      #f5c400;
+            --safety-soft: rgba(245, 196, 0, 0.12);
+            --chalk:       #f0ede8;
+            --smoke:       #888888;
+            --deep-smoke:  #555555;
+            --ok:          #3dba6b;
+            --fail:        #e8520a;
+            --font-display: 'Barlow Condensed', system-ui, sans-serif;
+            --font-body:    'Inter', system-ui, sans-serif;
+            --font-mono:    'IBM Plex Mono', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-body);
+            background: var(--carbon);
+            color: var(--chalk);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        ::selection { background: var(--ember); color: #000; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--carbon); }
+        ::-webkit-scrollbar-thumb { background: var(--graphite); border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--ember); }
+
+        .progress-bar {
+            position: fixed; top: 0; left: 0; width: 0%; height: 2px;
+            background: linear-gradient(90deg, var(--ember), var(--safety));
+            z-index: 10000;
+            transition: width 0.05s linear;
+        }
+
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+            padding: 0 48px; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: transparent;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0; transform: translateY(-12px);
+        }
+        .nav.visible {
+            opacity: 1; transform: translateY(0);
+            background: rgba(10, 10, 10, 0.88);
+            backdrop-filter: blur(20px) saturate(1.2);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .nav-brand {
+            font-family: var(--font-display);
+            font-size: 1.05rem; font-weight: 800;
+            letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--chalk);
+        }
+        .nav-brand em { color: var(--ember); font-style: normal; }
+        .nav-logos { display:flex; align-items:center; gap:14px; }
+        .nav-logo-hrp { display:block; width:138px; height:auto; max-height:28px; object-fit:contain; }
+        .nav-logo-hrf { display:block; width:112px; height:auto; max-height:28px; object-fit:contain; opacity:0.9; }
+        .footer-logo { display:block; width:190px; height:auto; max-height:36px; object-fit:contain; margin-bottom:12px; }
+        @media(max-width:900px) { .nav-logo-hrf { display:none; } .nav-logo-hrp { width:122px; } }
+        .nav-group { display: flex; align-items: center; gap: 32px; }
+        .nav-links { display: flex; align-items: center; gap: 28px; }
+        .nav-link {
+            font-family: var(--font-mono);
+            font-size: 0.6rem; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.14em;
+            color: var(--smoke); text-decoration: none;
+            transition: color 0.3s;
+            position: relative;
+        }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -4px; left: 0;
+            width: 0; height: 1px; background: var(--ember);
+            transition: width 0.3s;
+        }
+        .nav-link:hover { color: var(--chalk); }
+        .nav-link:hover::after { width: 100%; }
+        .lang-toggle {
+            display: flex; align-items: center; gap: 0;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            overflow: hidden;
+            font-family: var(--font-mono);
+            font-size: 0.58rem; font-weight: 600;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+        }
+        .lang-toggle span {
+            padding: 7px 14px;
+            color: var(--deep-smoke);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .lang-toggle span.active {
+            background: var(--ember); color: #000;
+        }
+        .lang-toggle span:not(.active):hover { color: var(--chalk); }
+        .nav-cta {
+            font-family: var(--font-mono);
+            font-size: 0.58rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            background: var(--ember); color: #000;
+            padding: 10px 24px; border: none;
+            text-decoration: none; transition: all 0.3s; cursor: pointer;
+        }
+        .nav-cta:hover { background: var(--safety); }
+
+        .hero {
+            position: relative; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        .hero-canvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 1;
+        }
+        .hero-vignette {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 40%, transparent 0%, var(--carbon) 70%);
+            z-index: 2;
+        }
+        .hero-content {
+            position: relative; z-index: 4;
+            text-align: center; max-width: 920px; padding: 0 40px;
+        }
+        .hero-tag {
+            display: inline-flex; align-items: center; gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 0.58rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.28em;
+            color: var(--safety); margin-bottom: 40px;
+            opacity: 0; transform: translateY(20px);
+            animation: revealUp 0.8s 0.5s cubic-bezier(0.4,0,0.2,1) forwards;
+        }
+        .pulse-dot {
+            width: 6px; height: 6px; background: var(--safety);
+            border-radius: 50%; animation: pulseDot 2.5s ease infinite;
+        }
+        @keyframes pulseDot {
+            0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(245,196,0,0.45); }
+            50% { opacity:0.6; box-shadow: 0 0 0 6px rgba(245,196,0,0); }
+        }
+        .hero-h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2.8rem, 7.5vw, 7rem);
+            font-weight: 900; line-height: 0.9;
+            letter-spacing: -0.02em; text-transform: uppercase;
+            margin-bottom: 32px;
+        }
+        .hero-h1 .line {
+            display: block; opacity: 0;
+            transform: translateY(60px); clip-path: inset(100% 0 0 0);
+        }
+        .hero-h1 .line:nth-child(1) { animation: revealLine 1s 0.8s cubic-bezier(0.4,0,0.2,1) forwards; }
+        .hero-h1 .line:nth-child(2) { animation: revealLine 1s 1.0s cubic-bezier(0.4,0,0.2,1) forwards; color: var(--ember); }
+        .hero-h1 .line:nth-child(3) {
+            animation: revealLine 1s 1.2s cubic-bezier(0.4,0,0.2,1) forwards;
+            font-size: 0.38em; letter-spacing: 0.12em; margin-top: 24px;
+            color: var(--smoke); font-weight: 600;
+        }
+        @keyframes revealLine { to { opacity:1; transform:translateY(0); clip-path:inset(0 0 0 0); } }
+        @keyframes revealUp { to { opacity:1; transform:translateY(0); } }
+
+        .hero-desc {
+            font-size: 0.9rem; color: var(--smoke);
+            max-width: 520px; margin: 0 auto 48px;
+            line-height: 1.9; opacity: 0;
+            animation: revealUp 0.8s 1.6s cubic-bezier(0.4,0,0.2,1) forwards;
+        }
+        .hero-actions {
+            display: flex; align-items: center; justify-content: center;
+            gap: 20px; opacity: 0;
+            animation: revealUp 0.8s 1.9s cubic-bezier(0.4,0,0.2,1) forwards;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            background: var(--ember); color: #000;
+            padding: 16px 36px; text-decoration: none;
+            transition: all 0.3s; cursor: pointer; border: none;
+            position: relative; overflow: hidden;
+        }
+        .btn-primary::before {
+            content: ''; position: absolute; top:0; left:-100%;
+            width:100%; height:100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            transition: left 0.6s;
+        }
+        .btn-primary:hover::before { left: 100%; }
+        .btn-primary:hover { background: var(--safety); }
+        .btn-secondary {
+            display: inline-flex; align-items: center; gap: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.68rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            background: transparent; color: var(--chalk);
+            padding: 16px 36px; text-decoration: none;
+            transition: all 0.3s; border: 1.5px solid var(--graphite);
+        }
+        .btn-secondary:hover { border-color: var(--chalk); }
+
+        .scroll-indicator {
+            position: absolute; bottom: 40px; left: 50%;
+            transform: translateX(-50%); z-index: 5;
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            opacity: 0; animation: revealUp 0.8s 2.4s cubic-bezier(0.4,0,0.2,1) forwards;
+        }
+        .scroll-indicator span {
+            font-family: var(--font-mono);
+            font-size: 0.5rem; text-transform: uppercase;
+            letter-spacing: 0.25em; color: var(--deep-smoke);
+        }
+        .scroll-line {
+            width: 1px; height: 48px;
+            background: linear-gradient(to bottom, var(--graphite), transparent);
+            position: relative; overflow: hidden;
+        }
+        .scroll-line::after {
+            content: ''; position: absolute; top:-100%; left:0;
+            width:100%; height:100%; background: var(--ember);
+            animation: scrollPulse 2.5s ease infinite;
+        }
+        @keyframes scrollPulse { 0%{top:-100%} 100%{top:200%} }
+
+        .marquee {
+            background: var(--ember); color: #000;
+            padding: 14px 0; overflow: hidden; white-space: nowrap;
+        }
+        .marquee-inner {
+            display: inline-block;
+            animation: marqueeScroll 35s linear infinite;
+            font-family: var(--font-mono);
+            font-size: 0.62rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.2em;
+        }
+        @keyframes marqueeScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+        .section {
+            position: relative; padding: 140px 48px;
+            max-width: 1280px; margin: 0 auto;
+        }
+        .section-wide { max-width: 1400px; }
+        .section-full { max-width: none; }
+
+        .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.55rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.35em;
+            color: var(--ember); margin-bottom: 24px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .eyebrow::before {
+            content: ''; width: 36px; height: 1.5px;
+            background: var(--ember); flex-shrink: 0;
+        }
+        .eyebrow.center { justify-content: center; }
+        .section-h2 {
+            font-family: var(--font-display);
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            font-weight: 900; line-height: 0.95;
+            letter-spacing: -0.01em; text-transform: uppercase;
+            margin-bottom: 28px;
+        }
+        .section-h2 .em { color: var(--ember); }
+        .section-h2 .safe { color: var(--safety); }
+        .section-desc {
+            font-size: 0.9rem; color: var(--smoke);
+            line-height: 1.85; max-width: 540px;
+        }
+
+        .reveal { opacity:0; transform:translateY(40px); transition: all 0.9s cubic-bezier(0.4,0,0.2,1); }
+        .reveal.visible { opacity:1; transform:translateY(0); }
+        .reveal-d1 { transition-delay: 0.1s; }
+        .reveal-d2 { transition-delay: 0.2s; }
+        .reveal-d3 { transition-delay: 0.3s; }
+        .reveal-d4 { transition-delay: 0.4s; }
+        .reveal-d5 { transition-delay: 0.5s; }
+
+        .bg-steel { background: var(--charcoal); }
+
+        /* PROBLEM */
+        .problem-layout {
+            display: grid; grid-template-columns: 1fr 1.05fr;
+            gap: 80px; align-items: center;
+        }
+        .problem-terminal {
+            background: var(--carbon); border: 1px solid var(--iron);
+            font-family: var(--font-mono);
+            font-size: 0.68rem; line-height: 1.9;
+            overflow: hidden; border-radius: 4px;
+        }
+        .terminal-header {
+            background: var(--iron); padding: 10px 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tdot { width:10px; height:10px; border-radius:50%; }
+        .tdot.r { background:#ff5f56; }
+        .tdot.y { background:#ffbd2e; }
+        .tdot.g { background:#27c93f; }
+        .terminal-label { margin-left:10px; color:var(--smoke); font-size:0.55rem; letter-spacing:0.08em; }
+        .terminal-body { padding: 22px 24px; color: var(--smoke); }
+        .t-line { margin-bottom: 4px; opacity:0; }
+        .t-line.err { color: #ff5f56; }
+        .t-line.warn { color: var(--safety); }
+        .t-line.ok { color: #27c93f; }
+        .t-line.cmd { color: var(--ember); }
+        .terminal-body.animated .t-line { animation: typeLine 0.06s forwards; }
+        .terminal-body.animated .t-line:nth-child(1) { animation-delay:0.1s }
+        .terminal-body.animated .t-line:nth-child(2) { animation-delay:0.4s }
+        .terminal-body.animated .t-line:nth-child(3) { animation-delay:0.7s }
+        .terminal-body.animated .t-line:nth-child(4) { animation-delay:1.0s }
+        .terminal-body.animated .t-line:nth-child(5) { animation-delay:1.3s }
+        .terminal-body.animated .t-line:nth-child(6) { animation-delay:1.6s }
+        .terminal-body.animated .t-line:nth-child(7) { animation-delay:1.9s }
+        .terminal-body.animated .t-line:nth-child(8) { animation-delay:2.2s }
+        @keyframes typeLine { to { opacity:1; } }
+
+        /* VIE */
+        .vie-section { background: var(--carbon); }
+        .vie-layout {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 80px; align-items: center;
+        }
+        .vie-diagram {
+            display: flex; flex-direction: column; gap: 0;
+            background: var(--charcoal); border: 1px solid var(--iron);
+            border-radius: 4px; overflow: hidden;
+        }
+        .vie-step {
+            padding: 20px 28px;
+            display: flex; align-items: center; gap: 16px;
+            border-bottom: 1px solid var(--iron);
+            transition: background 0.3s;
+        }
+        .vie-step:last-child { border-bottom: none; }
+        .vie-step:hover { background: rgba(232,82,10,0.04); }
+        .vie-step-num {
+            font-family: var(--font-display);
+            font-size: 1.4rem; font-weight: 900; color: var(--ember);
+            width: 32px; flex-shrink: 0;
+        }
+        .vie-step-text {
+            font-family: var(--font-mono);
+            font-size: 0.72rem; color: var(--chalk);
+            letter-spacing: 0.04em;
+        }
+        .vie-step-text small {
+            display: block; color: var(--smoke); font-size: 0.6rem; margin-top: 2px;
+        }
+        .vie-arrow {
+            text-align: center; padding: 6px 0;
+            color: var(--graphite); font-size: 0.7rem;
+        }
+
+        /* CONFIDENCE */
+        .confidence-section { background: var(--charcoal); }
+        .confidence-card {
+            background: var(--carbon); border: 1px solid var(--iron);
+            border-radius: 6px; padding: 48px;
+            max-width: 480px; margin: 0 auto;
+            text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .confidence-card::before {
+            content: ''; position: absolute; top:0; left:0; right:0;
+            height: 3px; background: linear-gradient(90deg, var(--ember), var(--safety));
+        }
+        .confidence-label {
+            font-family: var(--font-mono);
+            font-size: 0.55rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.3em;
+            color: var(--smoke); margin-bottom: 20px;
+        }
+        .confidence-score {
+            font-family: var(--font-display);
+            font-size: 5rem; font-weight: 900; line-height: 1;
+            color: var(--chalk); margin-bottom: 8px;
+        }
+        .confidence-score span { font-size: 1.5rem; color: var(--smoke); }
+        .confidence-grade {
+            font-family: var(--font-display);
+            font-size: 2rem; font-weight: 800; color: var(--safety);
+            margin-bottom: 20px;
+        }
+        .confidence-meta {
+            display: flex; justify-content: center; gap: 24px;
+            margin-bottom: 28px;
+        }
+        .confidence-meta-item { text-align: center; }
+        .confidence-meta-item .value {
+            font-family: var(--font-display);
+            font-size: 1.2rem; font-weight: 700; color: var(--chalk);
+        }
+        .confidence-meta-item .label {
+            font-family: var(--font-mono);
+            font-size: 0.5rem; color: var(--smoke);
+            text-transform: uppercase; letter-spacing: 0.15em;
+            margin-top: 4px;
+        }
+        .confidence-status {
+            font-family: var(--font-mono);
+            font-size: 0.62rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.15em;
+            color: var(--ok); border: 1px solid rgba(61,186,107,0.3);
+            padding: 8px 20px; display: inline-block;
+        }
+        .confidence-list {
+            text-align: left; margin-top: 28px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .confidence-list-item {
+            font-family: var(--font-mono);
+            font-size: 0.65rem; color: var(--smoke);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .confidence-list-item .check { color: var(--ok); font-weight: 700; }
+
+        /* WORKFLOW */
+        .workflow-section { background: var(--carbon); }
+        .workflow-track {
+            display: flex; align-items: stretch; gap: 2px;
+            background: var(--iron); margin-top: 64px;
+            border-radius: 4px; overflow: hidden;
+        }
+        .workflow-step {
+            flex: 1; background: var(--charcoal); padding: 36px 20px;
+            text-align: center; position: relative;
+            transition: background 0.4s;
+        }
+        .workflow-step:hover { background: var(--steel); }
+        .workflow-step::after {
+            content: '↓'; position: absolute; bottom: -18px; left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--font-mono); font-size: 0.7rem; color: var(--graphite);
+            z-index: 2;
+        }
+        .workflow-step:last-child::after { display: none; }
+        .workflow-icon {
+            font-size: 1.8rem; margin-bottom: 16px;
+            display: block;
+        }
+        .workflow-title {
+            font-family: var(--font-display);
+            font-size: 0.85rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.04em;
+            margin-bottom: 10px; color: var(--chalk);
+        }
+        .workflow-desc {
+            font-family: var(--font-body);
+            font-size: 0.7rem; color: var(--smoke); line-height: 1.7;
+        }
+
+        /* KNOWLEDGE ENGINE */
+        .knowledge-section { background: var(--charcoal); }
+        .knowledge-layout {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 80px; align-items: center;
+        }
+        .knowledge-visual {
+            background: var(--carbon); border: 1px solid var(--iron);
+            border-radius: 4px; padding: 40px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        .knowledge-item {
+            display: flex; align-items: center; gap: 16px;
+            padding: 16px 20px;
+            background: var(--charcoal);
+            border: 1px solid var(--iron);
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .knowledge-item:hover {
+            border-color: var(--ember);
+            background: rgba(232,82,10,0.04);
+        }
+        .knowledge-item-icon {
+            font-size: 1.4rem; flex-shrink: 0;
+        }
+        .knowledge-item-text {
+            font-family: var(--font-mono);
+            font-size: 0.72rem; color: var(--chalk);
+        }
+        .knowledge-item-text small {
+            display: block; color: var(--smoke); font-size: 0.6rem; margin-top: 2px;
+        }
+
+        /* FEATURES */
+        .features-section { background: var(--charcoal); }
+        .features-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 2px; background: var(--iron); margin-top: 72px;
+        }
+        .feature-card {
+            background: var(--carbon); padding: 48px 36px;
+            position: relative; overflow: hidden;
+            transition: background 0.4s;
+        }
+        .feature-card::after {
+            content: ''; position: absolute; top:0; left:0; right:0;
+            height: 2px; background: var(--ember);
+            transform: scaleX(0); transform-origin: left;
+            transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        .feature-card:hover::after { transform: scaleX(1); }
+        .feature-card:hover { background: var(--charcoal); }
+        .feature-badge {
+            position: absolute; top: 20px; right: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.5rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--ember); border: 1px solid var(--ember);
+            padding: 4px 10px;
+        }
+        .feature-icon {
+            font-size: 2.2rem; margin-bottom: 22px;
+            display: inline-block; transition: transform 0.3s;
+        }
+        .feature-card:hover .feature-icon { transform: scale(1.08); }
+        .feature-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.02em;
+            margin-bottom: 14px;
+        }
+        .feature-card p {
+            font-size: 0.78rem; color: var(--smoke); line-height: 1.8;
+        }
+
+        /* VIDEO */
+        .video-section { background: var(--carbon); }
+        .video-layout {
+            display: grid; grid-template-columns: 1.1fr 0.9fr;
+            gap: 72px; align-items: center;
+        }
+        .video-embed-wrap {
+            position: relative; background: var(--charcoal);
+            border: 1px solid var(--iron); overflow: hidden;
+            aspect-ratio: 16/9; border-radius: 4px;
+        }
+        .video-embed-wrap iframe {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            border:none;
+        }
+        .video-placeholder {
+            position: absolute; inset:0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 16px;
+            background: var(--charcoal); cursor: pointer;
+            transition: background 0.3s;
+        }
+        .video-placeholder:hover { background: var(--iron); }
+        .play-btn {
+            width: 72px; height: 72px;
+            border: 2px solid var(--ember);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
+        .video-placeholder:hover .play-btn {
+            background: var(--ember); border-color: var(--ember);
+        }
+        .play-btn svg { width:26px; height:26px; fill: var(--ember); margin-left: 4px; transition: fill 0.3s; }
+        .video-placeholder:hover .play-btn svg { fill: #000; }
+        .video-caption {
+            font-family: var(--font-mono);
+            font-size: 0.58rem; color: var(--smoke);
+            text-transform: uppercase; letter-spacing: 0.2em;
+        }
+        .video-embed-wrap::before {
+            content: ''; position: absolute; left:0; top:0; bottom:0;
+            width: 3px; background: var(--ember); z-index: 2;
+        }
+
+        /* COMPARISON */
+        .comparison-section { background: var(--carbon); }
+        .comparison-wrap {
+            display: grid; grid-template-columns: 1fr 1fr;
+            border: 1px solid var(--iron); margin-top: 64px;
+            border-radius: 4px; overflow: hidden;
+        }
+        .comp-side { padding: 48px; }
+        .comp-side.before {
+            background: var(--charcoal);
+            border-right: 1px solid var(--iron);
+        }
+        .comp-side.after { background: rgba(232,82,10,0.04); }
+        .comp-label {
+            font-family: var(--font-mono);
+            font-size: 0.55rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.2em;
+            margin-bottom: 32px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .comp-label.before { color: #ff5f56; }
+        .comp-label.after { color: var(--safety); }
+        .comp-label::before { content:''; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .comp-label.before::before { background:#ff5f56; }
+        .comp-label.after::before { background: var(--safety); }
+        .comp-list { display:flex; flex-direction:column; gap:16px; }
+        .comp-item {
+            font-size: 0.82rem; color: var(--smoke);
+            padding-left: 24px; position: relative; line-height: 1.6;
+        }
+        .comp-item::before { content:'×'; position:absolute; left:0; color:#ff5f56; font-weight:700; }
+        .comp-side.after .comp-item::before { content:'✓'; color: var(--safety); }
+
+        /* STORY */
+        .story-section { background: var(--carbon); text-align: center; }
+        .story-section .section-h2 { margin: 0 auto 28px; }
+        .story-section .section-desc { margin: 0 auto; }
+        .story-quote {
+            font-family: var(--font-display);
+            font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+            font-weight: 800; line-height: 1.1;
+            text-transform: uppercase;
+            max-width: 800px; margin: 64px auto 0;
+            color: var(--chalk);
+        }
+        .story-quote .em { color: var(--ember); }
+
+        /* MISTAKE */
+        .mistake-section { background: var(--charcoal); text-align: center; }
+        .mistake-number {
+            font-family: var(--font-display);
+            font-size: clamp(4rem, 10vw, 10rem);
+            font-weight: 900; line-height: 0.85;
+            color: var(--ember); opacity: 0.15;
+            margin-bottom: -20px;
+        }
+        .mistake-text {
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 4vw, 3.2rem);
+            font-weight: 900; line-height: 1;
+            text-transform: uppercase;
+            max-width: 700px; margin: 0 auto 32px;
+        }
+        .mistake-text .em { color: var(--ember); }
+        .mistake-text .safe { color: var(--safety); }
+        .mistake-divider {
+            width: 60px; height: 2px; background: var(--iron);
+            margin: 0 auto 32px;
+        }
+
+        /* GALLERY */
+        .gallery-section { background: var(--carbon); }
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 2px; background: var(--iron); margin-top: 64px;
+        }
+        .gallery-item {
+            position: relative; overflow: hidden; cursor: pointer;
+            background: var(--charcoal); aspect-ratio: 16/10;
+        }
+        .gallery-item img {
+            width:100%; height:100%; object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+            display: block;
+        }
+        .gallery-item:hover img { transform: scale(1.03); }
+        .gallery-placeholder {
+            width:100%; height:100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 12px;
+            background: var(--charcoal);
+        }
+        .gallery-placeholder-icon { font-size: 2.8rem; opacity:0.25; }
+        .gallery-placeholder-label {
+            font-family: var(--font-mono);
+            font-size: 0.55rem; text-transform: uppercase;
+            letter-spacing: 0.18em; color: var(--graphite);
+        }
+        .gallery-caption {
+            position: absolute; bottom:0; left:0; right:0;
+            background: linear-gradient(transparent, rgba(10,10,10,0.95));
+            padding: 36px 20px 16px;
+            font-size: 0.7rem; color: var(--chalk);
+            letter-spacing: 0.04em;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        .gallery-item:hover .gallery-caption { transform: translateY(0); }
+        .gallery-caption strong {
+            font-family: var(--font-display);
+            color: var(--safety); display: block; margin-bottom: 4px;
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+        }
+
+        /* ROADMAP */
+        .roadmap-section { background: var(--charcoal); }
+        .roadmap-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 48px; margin-top: 64px;
+        }
+        .roadmap-col h4 {
+            font-family: var(--font-mono);
+            font-size: 0.55rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.2em;
+            color: var(--smoke); margin-bottom: 24px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--iron);
+        }
+        .roadmap-col.today h4 { color: var(--safety); border-color: var(--safety); }
+        .roadmap-col.tomorrow h4 { color: var(--ember); border-color: var(--ember); }
+        .roadmap-list { display: flex; flex-direction: column; gap: 14px; }
+        .roadmap-item {
+            font-size: 0.82rem; color: var(--smoke);
+            padding-left: 20px; position: relative;
+        }
+        .roadmap-item::before {
+            content: '—'; position: absolute; left: 0; color: var(--graphite);
+        }
+
+        /* SPECS */
+        .specs-section { background: var(--charcoal); }
+        .specs-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 2px; background: var(--iron); margin-top: 64px;
+        }
+        .spec-cell {
+            background: var(--carbon); padding: 40px 36px;
+            transition: background 0.3s;
+        }
+        .spec-cell:hover { background: var(--charcoal); }
+        .spec-cell-head {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 20px;
+        }
+        .spec-tag {
+            font-family: var(--font-mono);
+            font-size: 0.52rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--ember); border: 1px solid var(--ember);
+            padding: 4px 10px; flex-shrink: 0;
+        }
+        .spec-cell-title {
+            font-family: var(--font-display);
+            font-size: 1rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.02em;
+        }
+        .spec-data {
+            font-size: 0.78rem; color: var(--smoke); line-height: 2;
+        }
+        .spec-data strong { color: var(--chalk); font-weight: 500; }
+
+        /* WHY CHOOSE */
+        .why-section { background: var(--carbon); }
+        .why-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 2px; background: var(--iron); margin-top: 64px;
+        }
+        .why-card {
+            background: var(--charcoal); padding: 40px 32px;
+            text-align: center; transition: background 0.3s;
+        }
+        .why-card:hover { background: var(--steel); }
+        .why-card-icon {
+            font-size: 2rem; margin-bottom: 16px;
+        }
+        .why-card h4 {
+            font-family: var(--font-display);
+            font-size: 1rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.02em;
+            margin-bottom: 10px;
+        }
+        .why-card p {
+            font-size: 0.78rem; color: var(--smoke); line-height: 1.7;
+        }
+
+        /* CTA */
+        .cta-section {
+            background: var(--steel);
+            text-align: center; padding: 160px 48px;
+        }
+        .cta-h2 {
+            font-family: var(--font-display);
+            font-size: clamp(2.8rem, 7vw, 6rem);
+            font-weight: 900; line-height: 0.9;
+            text-transform: uppercase; margin-bottom: 32px;
+        }
+        .cta-h2 .em { color: var(--ember); display: block; }
+        .cta-desc {
+            font-size: 0.9rem; color: var(--smoke);
+            max-width: 480px; margin: 0 auto 48px; line-height: 1.9;
+        }
+        .cta-meta {
+            margin-top: 32px;
+            font-family: var(--font-mono);
+            font-size: 0.55rem; color: var(--deep-smoke);
+            display: flex; justify-content: center; gap: 28px;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            flex-wrap: wrap;
+        }
+
+        /* FOOTER */
+        .footer {
+            padding: 48px 48px; border-top: 1px solid var(--iron);
+            max-width: 1280px; margin: 0 auto;
+        }
+        .footer-top {
+            display: flex; justify-content: space-between;
+            align-items: flex-start; margin-bottom: 40px;
+        }
+        .footer-brand-block {}
+        .footer-brand {
+            font-family: var(--font-display);
+            font-size: 1.1rem; font-weight: 800;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .footer-brand em { color: var(--ember); font-style: normal; }
+        .footer-tagline {
+            font-family: var(--font-mono);
+            font-size: 0.55rem; color: var(--smoke);
+            text-transform: uppercase; letter-spacing: 0.15em;
+        }
+        .footer-nav {
+            display: flex; gap: 48px;
+        }
+        .footer-nav-col h5 {
+            font-family: var(--font-mono);
+            font-size: 0.5rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.15em;
+            color: var(--chalk); margin-bottom: 16px;
+        }
+        .footer-nav-col a {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 0.6rem; color: var(--smoke);
+            text-decoration: none; margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+        .footer-nav-col a:hover { color: var(--chalk); }
+        .footer-bottom {
+            border-top: 1px solid var(--iron);
+            padding-top: 24px;
+            display: flex; justify-content: space-between;
+            align-items: center;
+        }
+        .footer-copy {
+            font-family: var(--font-mono);
+            font-size: 0.55rem; color: var(--deep-smoke);
+            text-transform: uppercase; letter-spacing: 0.08em;
+        }
+
+        @media (max-width: 900px) {
+            .nav { padding: 0 20px; }
+            .nav-links { display: none; }
+            .section { padding: 80px 20px; }
+            .problem-layout, .vie-layout, .comparison-wrap, .knowledge-layout, .video-layout { grid-template-columns: 1fr; }
+            .features-grid, .gallery-grid, .specs-grid, .why-grid { grid-template-columns: 1fr; }
+            .workflow-track { flex-direction: column; }
+            .workflow-step::after { display: none; }
+            .roadmap-grid { grid-template-columns: 1fr; }
+            .comp-side.before { border-right: none; border-bottom: 1px solid var(--iron); }
+            .footer-top { flex-direction: column; gap: 32px; }
+            .footer-nav { flex-wrap: wrap; gap: 32px; }
+            .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+            .cta-section { padding: 100px 20px; }
+            .confidence-card { padding: 32px 20px; }
+            .hero-actions { flex-direction: column; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* VISUAL PLACEHOLDERS — slots for real HRP screenshots and production photos */
+        .visual-slot {
+            position: relative; overflow: hidden; isolation: isolate;
+            min-height: 220px; aspect-ratio: 16 / 9;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(232,82,10,0.42);
+            border-radius: 5px;
+            background:
+                linear-gradient(135deg, rgba(232,82,10,0.07), transparent 45%),
+                repeating-linear-gradient(135deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 12px),
+                #0a0a0a;
+        }
+        .visual-slot::before {
+            content: ''; position: absolute; inset: 10px;
+            border: 1px dashed rgba(245,196,0,0.28); pointer-events: none;
+        }
+        .visual-slot-content {
+            position: relative; z-index: 1; padding: 24px;
+            text-align: center; max-width: 560px;
+        }
+        .visual-slot-mark {
+            display: block; font-family: var(--font-mono);
+            font-size: 1.8rem; line-height: 1; color: var(--ember);
+            margin-bottom: 12px; opacity: .85;
+        }
+        .visual-slot-title {
+            display: block; font-family: var(--font-display);
+            font-size: 1rem; font-weight: 800; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--chalk); margin-bottom: 7px;
+        }
+        .visual-slot-note {
+            display: block; font-family: var(--font-mono);
+            font-size: .55rem; line-height: 1.7; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--smoke);
+        }
+        .visual-slot-wide { margin-top: 56px; }
+        .visual-slot-inline { margin-top: 36px; }
+        .visual-slot-caption {
+            margin-top: 10px; font-family: var(--font-mono);
+            font-size: .55rem; letter-spacing: .1em; text-transform: uppercase;
+            color: var(--deep-smoke); text-align: right;
+        }
+        @media (max-width: 900px) {
+            .visual-slot { min-height: 170px; }
+            .visual-slot-wide, .visual-slot-inline { margin-top: 32px; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav class="nav" id="mainNav">
+    <div class="nav-brand nav-logos" aria-label="Halftone RIP Pro and HRF">
+        <img class="nav-logo-hrp" src="HRP-01.png" alt="Halftone RIP Pro">
+        <img class="nav-logo-hrf" src="LOGO%20HRf-01.svg" alt="HRF">
+    </div>
+    <div class="nav-group">
+        <div class="nav-links">
+            <a href="#problem" class="nav-link" data-en="The Problem" data-es="El Problema">The Problem</a>
+            <a href="#vie" class="nav-link" data-en="Visual Integrity" data-es="Integridad Visual">Visual Integrity</a>
+            <a href="#knowledge" class="nav-link" data-en="Knowledge" data-es="Conocimiento">Knowledge</a>
+            <a href="#workflow" class="nav-link" data-en="Workflow" data-es="Flujo">Workflow</a>
+            <a href="#features" class="nav-link" data-en="Features" data-es="Características">Features</a>
+            <a href="#specs" class="nav-link" data-en="Specs" data-es="Especificaciones">Specs</a>
+        </div>
+        <div class="lang-toggle">
+            <span class="active" data-lang="en">EN</span>
+            <span data-lang="es">ES</span>
+        </div>
+        <a href="#access" class="nav-cta" data-en="Request Access" data-es="Solicitar Acceso">Request Access</a>
+    </div>
+</nav>
+
+<section class="hero" id="hero">
+    <canvas class="hero-canvas" id="heroCanvas"></canvas>
+    <div class="hero-vignette"></div>
+    <div class="hero-content">
+        <div class="hero-tag">
+            <span class="pulse-dot"></span>
+            <span data-en="Beta Stable v0.4.17 · 9 plates in ~2 min" data-es="Beta Estable v0.4.17 · 9 placas en ~2 min">Beta Estable v0.4.17 · 9 placas en ~2 min</span>
+        </div>
+        <h1 class="hero-h1">
+            <span class="line" data-en="The Confidence" data-es="La Confianza">The Confidence</span>
+            <span class="line" data-en="Before Production." data-es="Antes de Imprimir.">Before Production.</span>
+            <span class="line" data-en="Because discovering an error after production is always too late." data-es="Porque descubrir un error después de producir siempre es tarde.">Because discovering an error after production is always too late.</span>
+        </h1>
+        <p class="hero-desc" data-en="Halftone RIP Pro is more than a RIP. It verifies. It understands. It compares. It helps you catch costly production mistakes before they reach the press." data-es="Halftone RIP Pro es más que un RIP. Verifica. Comprende. Compara. Te ayuda a detectar errores costosos antes de que lleguen a la prensa.">Halftone RIP Pro is more than a RIP. It verifies. It understands. It compares. It helps you catch costly production mistakes before they reach the press.</p>
+        <div class="hero-actions">
+            <a href="#vie" class="btn-primary" data-en="Discover How →" data-es="Descubrir Cómo →">Discover How →</a>
+            <a href="#access" class="btn-secondary" data-en="Request Beta Access" data-es="Solicitar Acceso Beta">Request Beta Access</a>
+        </div>
+    </div>
+    <div class="scroll-indicator">
+        <span data-en="Discover" data-es="Descubrir">Discover</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<div class="marquee">
+    <div class="marquee-inner">
+        <span data-en="PLATE REGISTRATION · SCREEN FREQUENCIES · WHITE BASE · CMYK SEPARATION · SPOT COLORS · HALFTONE · DOT GAIN · VISUAL ANALYSIS · QUALITY CONTROL · PREFLIGHT · DARK GARMENT · UNDERBASE · PROFESSIONAL SCREEN PRINTING · 100% OFFLINE · NO FILE LIMIT ·&nbsp;&nbsp;&nbsp;&nbsp;" data-es="REGISTRO DE PLACAS · LINEATURAS · BASE BLANCA · SEPARACIÓN CMYK · SPOT COLORS · SEMITONO · GANANCIA DE PUNTO · ANÁLISIS VISUAL · CONTROL DE CALIDAD · PREFLIGHT · PRENDA OSCURA · UNDERBASE · SERIGRAFÍA PROFESIONAL · 100% OFFLINE · SIN LÍMITE DE ARCHIVOS ·&nbsp;&nbsp;&nbsp;&nbsp;">PLATE REGISTRATION · SCREEN FREQUENCIES · WHITE BASE · CMYK SEPARATION · SPOT COLORS · HALFTONE · DOT GAIN · VISUAL ANALYSIS · QUALITY CONTROL · PREFLIGHT · DARK GARMENT · UNDERBASE · PROFESSIONAL SCREEN PRINTING · 100% OFFLINE · NO FILE LIMIT ·&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span data-en="PLATE REGISTRATION · SCREEN FREQUENCIES · WHITE BASE · CMYK SEPARATION · SPOT COLORS · HALFTONE · DOT GAIN · VISUAL ANALYSIS · QUALITY CONTROL · PREFLIGHT · DARK GARMENT · UNDERBASE · PROFESSIONAL SCREEN PRINTING · 100% OFFLINE · NO FILE LIMIT ·&nbsp;&nbsp;&nbsp;&nbsp;" data-es="REGISTRO DE PLACAS · LINEATURAS · BASE BLANCA · SEPARACIÓN CMYK · SPOT COLORS · SEMITONO · GANANCIA DE PUNTO · ANÁLISIS VISUAL · CONTROL DE CALIDAD · PREFLIGHT · PRENDA OSCURA · UNDERBASE · SERIGRAFÍA PROFESIONAL · 100% OFFLINE · SIN LÍMITE DE ARCHIVOS ·&nbsp;&nbsp;&nbsp;&nbsp;">PLATE REGISTRATION · SCREEN FREQUENCIES · WHITE BASE · CMYK SEPARATION · SPOT COLORS · HALFTONE · DOT GAIN · VISUAL ANALYSIS · QUALITY CONTROL · PREFLIGHT · DARK GARMENT · UNDERBASE · PROFESSIONAL SCREEN PRINTING · 100% OFFLINE · NO FILE LIMIT ·&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    </div>
+</div>
+
+<section class="section bg-steel" id="problem">
+    <div class="problem-layout">
+        <div class="reveal">
+            <div class="eyebrow" data-en="The Problem" data-es="El Problema">The Problem</div>
+            <h2 class="section-h2">
+                <span data-en="The problem isn't" data-es="El problema no es">The problem isn't</span><br>
+                <span class="em" data-en="your RIP." data-es="tu RIP.">your RIP.</span><br>
+                <span data-en="It's everything" data-es="Es todo lo que">It's everything</span><br>
+                <span data-en="your RIP doesn't see." data-es="tu RIP no ve.">your RIP doesn't see.</span>
+            </h2>
+            <p class="section-desc" data-en="Traditional RIPs generate separations. HRP goes one step further. It asks a question no conventional RIP asks: 'Is this still the artwork your customer approved?'" data-es="Los RIPs tradicionales generan separaciones. HRP va un paso más allá. Se hace una pregunta que ningún RIP convencional se hace: '¿Sigue siendo este el arte que aprobó tu cliente?'">Traditional RIPs generate separations. HRP goes one step further. It asks a question no conventional RIP asks: "Is this still the artwork your customer approved?"</p>
+        </div>
+        <div class="reveal reveal-d2">
+            <div class="problem-terminal">
+                <div class="terminal-header">
+                    <span class="tdot r"></span>
+                    <span class="tdot y"></span>
+                    <span class="tdot g"></span>
+                    <span class="terminal-label" data-en="separation — process in progress" data-es="separación — proceso en curso">separation — process in progress</span>
+                </div>
+                <div class="terminal-body" id="terminalBody">
+                    <div class="t-line cmd">▶ Loading artwork.pdf — 4 channels detected</div>
+                    <div class="t-line warn">⚠  LPI/DPI Ratio: 5.4:1 — recommended 8:1 or higher</div>
+                    <div class="t-line err">✕  Channel "Spot_3" has no identifiable color</div>
+                    <div class="t-line warn">⚠  Ink coverage: 94% — mesh flooding risk</div>
+                    <div class="t-line err">✕  Dark garment — white base not detected</div>
+                    <div class="t-line warn">⚠  2 plates with duplicate channel names</div>
+                    <div class="t-line">⏱  Time: 51.2s</div>
+                    <div class="t-line err">✕  FAILURE — 4 critical warnings before printing</div>
+                </div>
+            </div>
+
+        <div class="visual-slot visual-slot-inline" role="img"
+             aria-label="Production floor / screen printing — image placeholder">
+            <div class="visual-slot-content">
+                <span class="visual-slot-mark">▧</span>
+                <strong class="visual-slot-title" data-en="Production floor / screen printing" data-es="Área de producción / serigrafía">Production floor / screen printing</strong>
+                <span class="visual-slot-note" data-en="Suggested: real photo showing the cost of a production error" data-es="Sugerencia: foto real que contextualice el costo de un error">Suggested: real photo showing the cost of a production error</span>
+            </div>
+        </div>
+        <div class="visual-slot-caption" data-en="Suggested visual · replace this frame with an actual image" data-es="Recurso visual sugerido · sustituir este marco por una imagen real">Suggested visual · replace this frame with an actual image</div>
+
+        </div>
+    </div>
+</section>
+
+<section class="section vie-section" id="vie">
+    <div class="vie-layout">
+        <div class="reveal">
+            <div class="eyebrow" data-en="Introducing" data-es="Presentamos">Introducing</div>
+            <h2 class="section-h2">
+                <span class="em">Visual Integrity</span><br>
+                <span class="safe">Engine™</span>
+            </h2>
+            <p class="section-desc" data-en="A full structural verification system that compares the approved artwork against the production result before printing. Not color. Not pixels. Visual integrity." data-es="Un sistema completo de verificación estructural que compara el arte aprobado contra el resultado de producción antes de imprimir. No color. No píxeles. Integridad visual.">A full structural verification system that compares the approved artwork against the production result before printing. Not color. Not pixels. Visual integrity.</p>
+            <div style="margin-top:32px;display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:12px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--fail);font-weight:700;font-size:1rem;">×</span>
+                    <span data-en="Missing knockout" data-es="Knockout faltante">Missing knockout</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--fail);font-weight:700;font-size:1rem;">×</span>
+                    <span data-en="Unexpected overlap" data-es="Superposición inesperada">Unexpected overlap</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--fail);font-weight:700;font-size:1rem;">×</span>
+                    <span data-en="Geometry changes" data-es="Cambios de geometría">Geometry changes</span>
+                </div>
+            </div>
+            <p class="section-desc" style="margin-top:28px;" data-en="Thousands of garments can be lost because of a mistake smaller than a millimeter." data-es="Miles de prendas pueden perderse por un error más pequeño que un milímetro.">Thousands of garments can be lost because of a mistake smaller than a millimeter.</p>
+        </div>
+        <div class="reveal reveal-d2">
+            <div class="vie-diagram">
+                <div class="vie-step">
+                    <div class="vie-step-num">01</div>
+                    <div class="vie-step-text">
+                        PDF
+                        <small data-en="Approved artwork loaded" data-es="Arte aprobado cargado">Approved artwork loaded</small>
+                    </div>
+                </div>
+                <div class="vie-arrow">↓</div>
+                <div class="vie-step">
+                    <div class="vie-step-num">02</div>
+                    <div class="vie-step-text">
+                        Render
+                        <small data-en="Production result generated" data-es="Resultado de producción generado">Production result generated</small>
+                    </div>
+                </div>
+                <div class="vie-arrow">↓</div>
+                <div class="vie-step">
+                    <div class="vie-step-num">03</div>
+                    <div class="vie-step-text">
+                        Comparison
+                        <small data-en="Structural analysis in real time" data-es="Análisis estructural en tiempo real">Structural analysis in real time</small>
+                    </div>
+                </div>
+                <div class="vie-arrow">↓</div>
+                <div class="vie-step">
+                    <div class="vie-step-num">04</div>
+                    <div class="vie-step-text">
+                        Confidence Score
+                        <small data-en="Production risk assessed" data-es="Riesgo de producción evaluado">Production risk assessed</small>
+                    </div>
+                </div>
+                <div class="vie-arrow">↓</div>
+                <div class="vie-step">
+                    <div class="vie-step-num">05</div>
+                    <div class="vie-step-text" style="color:var(--safety);">
+                        Safe to Print
+                        <small data-en="Or detailed report if differences found" data-es="O reporte detallado si se encuentran diferencias">Or detailed report if differences found</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div class="visual-slot visual-slot-wide" role="img"
+             aria-label="Visual Integrity comparison — image placeholder">
+            <div class="visual-slot-content">
+                <span class="visual-slot-mark">▧</span>
+                <strong class="visual-slot-title" data-en="Visual Integrity comparison" data-es="Comparación de integridad visual">Visual Integrity comparison</strong>
+                <span class="visual-slot-note" data-en="Suggested: approved artwork vs. detected production difference" data-es="Sugerencia: arte aprobado frente a diferencia detectada">Suggested: approved artwork vs. detected production difference</span>
+            </div>
+        </div>
+        <div class="visual-slot-caption" data-en="Suggested visual · replace this frame with an actual image" data-es="Recurso visual sugerido · sustituir este marco por una imagen real">Suggested visual · replace this frame with an actual image</div>
+
+</section>
+
+<section class="section confidence-section">
+    <div class="reveal" style="text-align:center;">
+        <div class="eyebrow center" data-en="Confidence Score™" data-es="Confidence Score™">Confidence Score™</div>
+        <h2 class="section-h2" style="margin:0 auto 24px;" data-en="This is where the future of HRP lives." data-es="Aquí es donde vive el futuro de HRP.">This is where the future of HRP lives.</h2>
+        <p class="section-desc" style="margin:0 auto;" data-en="Not giant percentages. An elegant card that transmits calm." data-es="No porcentajes gigantes. Una tarjeta elegante que transmite tranquilidad.">Not giant percentages. An elegant card that transmits calm.</p>
+    </div>
+    <div class="reveal reveal-d2" style="margin-top:64px;">
+        <div class="confidence-card">
+            <div class="confidence-label" data-en="Visual Integrity" data-es="Integridad Visual">Visual Integrity</div>
+            <div class="confidence-score">99.87<span>%</span></div>
+            <div class="confidence-grade">A+</div>
+            <div class="confidence-meta">
+                <div class="confidence-meta-item">
+                    <div class="value" data-en="LOW RISK" data-es="RIESGO BAJO">LOW RISK</div>
+                    <div class="label" data-en="Status" data-es="Estado">Status</div>
+                </div>
+                <div class="confidence-meta-item">
+                    <div class="value">2</div>
+                    <div class="label" data-en="Findings" data-es="Hallazgos">Findings</div>
+                </div>
+                <div class="confidence-meta-item">
+                    <div class="value">0</div>
+                    <div class="label" data-en="Blockers" data-es="Bloqueos">Blockers</div>
+                </div>
+            </div>
+            <div class="confidence-status" data-en="Ready for Production" data-es="Listo para Producción">Ready for Production</div>
+            <div class="confidence-list">
+                <div class="confidence-list-item"><span class="check">✓</span> <span data-en="Geometry Verified" data-es="Geometría Verificada">Geometry Verified</span></div>
+                <div class="confidence-list-item"><span class="check">✓</span> <span data-en="No Missing Objects" data-es="Sin Objetos Faltantes">No Missing Objects</span></div>
+                <div class="confidence-list-item"><span class="check">✓</span> <span data-en="No Unexpected Additions" data-es="Sin Adiciones Inesperadas">No Unexpected Additions</span></div>
+                <div class="confidence-list-item"><span class="check">✓</span> <span data-en="Print Ready" data-es="Listo para Imprimir">Print Ready</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section workflow-section" id="workflow">
+    <div class="reveal">
+        <div class="eyebrow" data-en="Architecture" data-es="Arquitectura">Architecture</div>
+        <h2 class="section-h2">
+            <span data-en="Six Engines." data-es="Seis Motores.">Six Engines.</span><br>
+            <span class="em" data-en="One Workflow." data-es="Un Flujo.">One Workflow.</span>
+        </h2>
+        <p class="section-desc" data-en="Every stage has a single responsibility. Together they create something much more valuable than a traditional RIP. They create confidence." data-es="Cada etapa tiene una sola responsabilidad. Juntas crean algo mucho más valioso que un RIP tradicional. Crean confianza.">Every stage has a single responsibility. Together they create something much more valuable than a traditional RIP. They create confidence.</p>
+    </div>
+    <div class="workflow-track reveal reveal-d2">
+        <div class="workflow-step">
+            <span class="workflow-icon">📥</span>
+            <div class="workflow-title" data-en="Import" data-es="Importar">Import</div>
+            <div class="workflow-desc" data-en="Reads professional PostScript and PDF files with full channel support." data-es="Lee archivos PostScript y PDF profesionales con soporte completo de canales.">Reads professional PostScript and PDF files with full channel support.</div>
+        </div>
+        <div class="workflow-step">
+            <span class="workflow-icon">🔍</span>
+            <div class="workflow-title" data-en="Preflight" data-es="Preflight">Preflight</div>
+            <div class="workflow-desc" data-en="Detects technical issues before production begins. Fonts, resolution, overprints." data-es="Detecta problemas técnicos antes de que comience la producción. Fuentes, resolución, overprints.">Detects technical issues before production begins. Fonts, resolution, overprints.</div>
+        </div>
+        <div class="workflow-step">
+            <span class="workflow-icon">🧠</span>
+            <div class="workflow-title" data-en="Knowledge" data-es="Conocimiento">Knowledge</div>
+            <div class="workflow-desc" data-en="Understands textile printing rules. Not just colors. Production knowledge." data-es="Comprende las reglas de impresión textil. No solo colores. Conocimiento de producción.">Understands textile printing rules. Not just colors. Production knowledge.</div>
+        </div>
+        <div class="workflow-step">
+            <span class="workflow-icon">🎯</span>
+            <div class="workflow-title" data-en="Visual Integrity" data-es="Integridad Visual">Visual Integrity</div>
+            <div class="workflow-desc" data-en="Verifies that nothing changed between approved artwork and production result." data-es="Verifica que nada cambió entre el arte aprobado y el resultado de producción.">Verifies that nothing changed between approved artwork and production result.</div>
+        </div>
+        <div class="workflow-step">
+            <span class="workflow-icon">⚙️</span>
+            <div class="workflow-title" data-en="Production" data-es="Producción">Production</div>
+            <div class="workflow-desc" data-en="Generates print-ready separations with production-aware settings." data-es="Genera separaciones listas para imprimir con configuraciones conscientes de producción.">Generates print-ready separations with production-aware settings.</div>
+        </div>
+        <div class="workflow-step">
+            <span class="workflow-icon">🔲</span>
+            <div class="workflow-title" data-en="Halftone" data-es="Semitono">Halftone</div>
+            <div class="workflow-desc" data-en="Cosine spot functions · 5 dot shapes · calibrated angles per channel · 9 plates at 600 DPI in ~2 min." data-es="Spot functions coseno · 5 formas de punto · ángulos calibrados por canal · 9 placas a 600 DPI en ~2 min.">Cosine spot functions · 5 dot shapes · calibrated angles per channel · 9 plates at 600 DPI in ~2 min.</div>
+        </div>
+    </div>
+</section>
+
+<section class="section knowledge-section" id="knowledge">
+    <div class="knowledge-layout">
+        <div class="reveal">
+            <div class="eyebrow" data-en="The Knowledge Engine™" data-es="El Knowledge Engine™">The Knowledge Engine™</div>
+            <h2 class="section-h2">
+                <span data-en="Printing isn't" data-es="Imprimir no es">Printing isn't</span><br>
+                <span class="em" data-en="just colors." data-es="solo colores.">just colors.</span><br>
+                <span class="safe" data-en="It's experience." data-es="Es experiencia.">It's experience.</span>
+            </h2>
+            <p class="section-desc" data-en="The Knowledge Engine understands production concepts that generic RIP software simply doesn't know. It recognizes production terminology. It understands separation names. It supports multilingual workflows. It learns from production libraries." data-es="El Knowledge Engine comprende conceptos de producción que un software RIP genérico simplemente no conoce. Reconoce terminología de producción. Comprende nombres de separación. Soporta flujos multilingües. Aprende de bibliotecas de producción.">The Knowledge Engine understands production concepts that generic RIP software simply doesn't know. It recognizes production terminology. It understands separation names. It supports multilingual workflows. It learns from production libraries.</p>
+            <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--safety);font-weight:700;">✓</span>
+                    <span data-en="Recognizes production terminology" data-es="Reconoce terminología de producción">Recognizes production terminology</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--safety);font-weight:700;">✓</span>
+                    <span data-en="Understands separation names in any language" data-es="Comprende nombres de separación en cualquier idioma">Understands separation names in any language</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--safety);font-weight:700;">✓</span>
+                    <span data-en="Supports multilingual workflows" data-es="Soporta flujos de trabajo multilingües">Supports multilingual workflows</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--safety);font-weight:700;">✓</span>
+                    <span data-en="Learns from production libraries" data-es="Aprende de bibliotecas de producción">Learns from production libraries</span>
+                </div>
+            </div>
+        </div>
+        <div class="reveal reveal-d2">
+            <div class="knowledge-visual">
+                <div class="knowledge-item">
+                    <span class="knowledge-item-icon">📚</span>
+                    <div class="knowledge-item-text">
+                        Import Adobe ASE Libraries
+                        <small data-en="Bring your existing color swatches directly into HRP" data-es="Trae tus muestras de color existentes directamente a HRP">Bring your existing color swatches directly into HRP</small>
+                    </div>
+                </div>
+                <div class="knowledge-item">
+                    <span class="knowledge-item-icon">🎨</span>
+                    <div class="knowledge-item-text">
+                        Create Your Own Production Colors
+                        <small data-en="Build a library that matches your shop's exact workflow" data-es="Construye una biblioteca que coincida con el flujo exacto de tu taller">Build a library that matches your shop's exact workflow</small>
+                    </div>
+                </div>
+                <div class="knowledge-item">
+                    <span class="knowledge-item-icon">🔄</span>
+                    <div class="knowledge-item-text">
+                        Share Libraries Across Teams
+                        <small data-en="Consistency across operators, shifts, and locations" data-es="Consistencia entre operadores, turnos y ubicaciones">Consistency across operators, shifts, and locations</small>
+                    </div>
+                </div>
+                <div class="knowledge-item">
+                    <span class="knowledge-item-icon">✓</span>
+                    <div class="knowledge-item-text">
+                        Keep Your Workflow Consistent
+                        <small data-en="Same colors, same names, same results — every time" data-es="Mismos colores, mismos nombres, mismos resultados — siempre">Same colors, same names, same results — every time</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div class="visual-slot visual-slot-wide" role="img"
+             aria-label="HRP interface / analysis panel — image placeholder">
+            <div class="visual-slot-content">
+                <span class="visual-slot-mark">▧</span>
+                <strong class="visual-slot-title" data-en="HRP interface / analysis panel" data-es="Interfaz de HRP / panel de análisis">HRP interface / analysis panel</strong>
+                <span class="visual-slot-note" data-en="Suggested: authentic screenshot of a relevant tool or report" data-es="Sugerencia: captura auténtica de una herramienta o informe">Suggested: authentic screenshot of a relevant tool or report</span>
+            </div>
+        </div>
+        <div class="visual-slot-caption" data-en="Suggested visual · replace this frame with an actual image" data-es="Recurso visual sugerido · sustituir este marco por una imagen real">Suggested visual · replace this frame with an actual image</div>
+
+</section>
+
+<section class="section features-section" id="features">
+    <div class="reveal">
+        <div class="eyebrow" data-en="Capabilities" data-es="Capacidades">Capabilities</div>
+        <h2 class="section-h2">
+            <span data-en="Production Knowledge." data-es="Conocimiento de Producción.">Production Knowledge.</span><br>
+            <span class="em" data-en="Not just software." data-es="No solo software.">Not just software.</span><br>
+            <span class="safe" data-en="Experience." data-es="Experiencia.">Experience.</span>
+        </h2>
+        <p class="section-desc" data-en="Built from over twenty years solving real production problems. Every validation rule inside HRP comes from actual screen-printing experience. Not theoretical workflows. Real production floors." data-es="Construido a partir de más de veinte años resolviendo problemas reales de producción. Cada regla de validación dentro de HRP proviene de experiencia real en serigrafía. No flujos teóricos. Pisos de producción reales.">Built from over twenty years solving real production problems. Every validation rule inside HRP comes from actual screen-printing experience. Not theoretical workflows. Real production floors.</p>
+    </div>
+    <div class="features-grid">
+        <div class="feature-card reveal reveal-d1">
+            <div class="feature-badge" data-en="Intelligent" data-es="Inteligente">Intelligent</div>
+            <div class="feature-icon">🎯</div>
+            <h3 data-en="Smart White Base" data-es="Base Blanca Inteligente">Smart White Base</h3>
+            <p data-en="Automatically detects if a channel requires underbase based on color and substrate. No manual configuration: if the garment is dark and the design needs it, the white base generates itself." data-es="Detecta automáticamente si un canal requiere underbase según el color y el sustrato. Sin configuración manual: si la prenda es oscura y el diseño lo necesita, la base blanca se genera sola.">Automatically detects if a channel requires underbase based on color and substrate. No manual configuration: if the garment is dark and the design needs it, the white base generates itself.</p>
+        </div>
+        <div class="feature-card reveal reveal-d2">
+            <div class="feature-badge" data-en="Adaptive" data-es="Adaptativo">Adaptive</div>
+            <div class="feature-icon">🧠</div>
+            <h3 data-en="Knowledge Engine™" data-es="Knowledge Engine™">Knowledge Engine™</h3>
+            <p data-en="Interprets channel names in any format — 'navy blue', 'NAVY', 'Dark Blue' — and maps them to the correct ink color. Includes customizable color library per shop. Supports ASE import." data-es="Interpreta nombres de canal en cualquier formato — 'azul marino', 'NAVY', 'Azul Oscuro' — y los mapea al color de tinta correcto. Incluye biblioteca de colores personalizable por taller. Soporta importación ASE.">Interprets channel names in any format — "navy blue", "NAVY", "Dark Blue" — and maps them to the correct ink color. Includes customizable color library per shop. Supports ASE import.</p>
+        </div>
+        <div class="feature-card reveal reveal-d3">
+            <div class="feature-badge" data-en="Preventive" data-es="Preventivo">Preventive</div>
+            <div class="feature-icon">🔍</div>
+            <h3 data-en="Visual Integrity™" data-es="Visual Integrity™">Visual Integrity™</h3>
+            <p data-en="Compares the composite of separations against the original artwork before printing. Generates a visual difference map — like a spot-the-difference game, but for real production." data-es="Compara el composite de separaciones contra la imagen original antes de imprimir. Genera un mapa visual de diferencias — como el juego de las 7 diferencias, pero para producción real.">Compares the composite of separations against the original artwork before printing. Generates a visual difference map — like a spot-the-difference game, but for real production.</p>
+        </div>
+        <div class="feature-card reveal reveal-d1">
+            <div class="feature-badge" data-en="Professional" data-es="Profesional">Professional</div>
+            <div class="feature-icon">🔲</div>
+            <h3 data-en="Halftone Engine" data-es="Motor de Semitono">Halftone Engine</h3>
+            <p data-en="Continuous cosine spot functions. Calibrated angles per channel: C:15° M:75° Y:0° K:45°. Five dot shapes. LPI range 35–65 (textile). Processes 9 plates at 600 DPI in under 2 minutes on a standard PC." data-es="Spot functions coseno continuas. Ángulos calibrados por canal: C:15° M:75° Y:0° K:45°. Cinco formas de punto. Rango LPI 35–65 (textil). Procesa 9 placas a 600 DPI en menos de 2 minutos en una PC estándar.">Round · Ellipse · Line · Square · Diamond · Wasatch Film. LPI 35–150. Optimal DPI/LPI ratio validation per channel and substrate.</p>
+        </div>
+        <div class="feature-card reveal reveal-d2">
+            <div class="feature-badge" data-en="Aware" data-es="Consciente">Aware</div>
+            <div class="feature-icon">⚡</div>
+            <h3 data-en="Separation Analysis" data-es="Análisis de Separación">Separation Analysis</h3>
+            <p data-en="Analyzes separations after processing: ink coverage, channel order, missing underbase, duplicate names, potential mesh flooding risk. Direct production feedback — no jargon." data-es="Analiza las separaciones después del procesamiento: cobertura de tinta, orden de canales, underbase faltante, nombres duplicados, riesgo de inundación de malla. Feedback directo de producción — sin tecnicismos.">Validates artwork before creating separations. Fonts, resolution, spot colors, overprints, transparency, production rules, potential conflicts. The goal is a useful report, not a long one.</p>
+        </div>
+        <div class="feature-card reveal reveal-d3">
+            <div class="feature-badge" data-en="Offline" data-es="Offline">Offline</div>
+            <div class="feature-icon">🔒</div>
+            <h3 data-en="100% Local Processing" data-es="Procesamiento 100% Local">100% Local Processing</h3>
+            <p data-en="No cloud. No uploads. No subscriptions. Every file stays on your machine. Your production data never leaves your facility. Designed for shops that take security seriously." data-es="Sin nube. Sin subidas. Sin suscripciones. Cada archivo permanece en tu máquina. Tus datos de producción nunca salen de tu instalación. Diseñado para talleres que toman la seguridad en serio.">No cloud. No uploads. No subscriptions. Every file stays on your machine. Your production data never leaves your facility. Designed for shops that take security seriously.</p>
+        </div>
+    </div>
+
+        <div class="visual-slot visual-slot-wide" role="img"
+             aria-label="Halftone detail / printed result — image placeholder">
+            <div class="visual-slot-content">
+                <span class="visual-slot-mark">▧</span>
+                <strong class="visual-slot-title" data-en="Halftone detail / printed result" data-es="Detalle de semitono / resultado impreso">Halftone detail / printed result</strong>
+                <span class="visual-slot-note" data-en="Suggested: close-up showing dot structure on a real print" data-es="Sugerencia: acercamiento a la trama de una impresión real">Suggested: close-up showing dot structure on a real print</span>
+            </div>
+        </div>
+        <div class="visual-slot-caption" data-en="Suggested visual · replace this frame with an actual image" data-es="Recurso visual sugerido · sustituir este marco por una imagen real">Suggested visual · replace this frame with an actual image</div>
+
+</section>
+
+<section class="section video-section" id="demo">
+    <div class="video-layout">
+        <div class="reveal">
+            <div class="video-embed-wrap">
+                <div class="video-placeholder" id="videoPlaceholder" onclick="loadVideo()">
+                    <div class="play-btn">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                    <span class="video-caption" data-en="Watch full demo — approx. 3 min" data-es="Ver demo completo — aprox. 3 min">Watch full demo — approx. 3 min</span>
+                </div>
+                <iframe id="videoIframe" style="display:none"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+        <div class="reveal reveal-d2">
+            <div class="eyebrow" data-en="Demo in Production" data-es="Demo en Producción">Demo in Production</div>
+            <h2 class="section-h2">
+                <span data-en="Watch it" data-es="Míralo">Watch it</span><br>
+                <span data-en="work in" data-es="funcionar en">work in</span><br>
+                <span class="em" data-en="your shop." data-es="tu taller.">your shop.</span>
+            </h2>
+            <p class="section-desc" style="margin-bottom:28px;" data-en="In less than 3 minutes: load a PDF, watch automatic separation, review preflight, and download plates ready for mesh." data-es="En menos de 3 minutos: carga un PDF, observa la separación automática, revisa el preflight y descarga las placas listas para malla.">In less than 3 minutes: load a PDF, watch automatic separation, review preflight, and download plates ready for mesh.</p>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:12px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--safety);font-weight:700;">✓</span>
+                    <span data-en="CMYK + Spot separation in real time" data-es="Separación CMYK + Spot en tiempo real">CMYK + Spot separation in real time</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--safety);font-weight:700;">✓</span>
+                    <span data-en="Frequency control per channel" data-es="Control de frecuencia por canal">Frequency control per channel</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--safety);font-weight:700;">✓</span>
+                    <span data-en="Visual composite vs. original comparison" data-es="Comparación visual composite vs. original">Visual composite vs. original comparison</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;font-size:0.78rem;color:var(--smoke);">
+                    <span style="color:var(--safety);font-weight:700;">✓</span>
+                    <span data-en="Direct PNG + ZIP plate export" data-es="Exportación directa PNG + ZIP de placas">Direct PNG + ZIP plate export</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section comparison-section">
+    <div class="reveal">
+        <div class="eyebrow" data-en="Comparison" data-es="Comparación">Comparison</div>
+        <h2 class="section-h2">
+            <span data-en="Traditional RIP" data-es="RIP Tradicional">Traditional RIP</span><br>
+            <span class="em" data-en="vs" data-es="vs">vs</span>
+            <span class="safe" data-en="HRP" data-es="HRP">HRP</span>
+        </h2>
+        <p class="section-desc" data-en="The difference isn't in the output. It's in what happens before the output." data-es="La diferencia no está en la salida. Está en lo que ocurre antes de la salida.">The difference isn't in the output. It's in what happens before the output.</p>
+    </div>
+    <div class="comparison-wrap reveal reveal-d2">
+        <div class="comp-side before">
+            <div class="comp-label before" data-en="Traditional RIP" data-es="RIP Tradicional">Traditional RIP</div>
+            <div class="comp-list">
+                <div class="comp-item" data-en="Generates TIFF separations" data-es="Genera separaciones TIFF">Generates TIFF separations</div>
+                <div class="comp-item" data-en="Creates basic halftones" data-es="Crea semitonos básicos">Creates basic halftones</div>
+                <div class="comp-item" data-en="Basic preflight checks" data-es="Chequeos de preflight básicos">Basic preflight checks</div>
+                <div class="comp-item" data-en="Manual visual inspection required" data-es="Inspección visual manual requerida">Manual visual inspection required</div>
+                <div class="comp-item" data-en="Generic color name handling" data-es="Manejo genérico de nombres de color">Generic color name handling</div>
+                <div class="comp-item" data-en="Static workflow" data-es="Flujo de trabajo estático">Static workflow</div>
+            </div>
+        </div>
+        <div class="comp-side after">
+            <div class="comp-label after" data-en="Halftone RIP Pro" data-es="Halftone RIP Pro">Halftone RIP Pro</div>
+            <div class="comp-list">
+                <div class="comp-item" data-en="Generates TIFF separations" data-es="Genera separaciones TIFF">Generates TIFF separations</div>
+                <div class="comp-item" data-en="Calibrated angles per channel — C:15° M:75° Y:0° K:45°" data-es="Ángulos calibrados por canal — C:15° M:75° Y:0° K:45°">Professional halftones with anti-moire</div>
+                <div class="comp-item" data-en="Production-aware preflight" data-es="Preflight consciente de producción">Production-aware preflight</div>
+                <div class="comp-item" data-en="Visual Integrity verification" data-es="Verificación de Integridad Visual">Visual Integrity verification</div>
+                <div class="comp-item" data-en="Knowledge Engine with ASE support" data-es="Knowledge Engine con soporte ASE">Knowledge Engine with ASE support</div>
+                <div class="comp-item" data-en="Intelligent workflow with Confidence Score" data-es="Flujo inteligente con Confidence Score">Intelligent workflow with Confidence Score</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section story-section">
+    <div class="reveal">
+        <div class="eyebrow center" data-en="Built by Production" data-es="Construido por Producción">Built by Production</div>
+        <h2 class="section-h2" data-en="For Production." data-es="Para Producción.">For Production.</h2>
+        <p class="section-desc" data-en="HRP wasn't designed from theory. Every feature inside the software was created to solve a real production problem. Not imagined. Not simulated. Experienced." data-es="HRP no fue diseñado desde la teoría. Cada característica dentro del software fue creada para resolver un problema real de producción. No imaginado. No simulado. Experimentado.">HRP wasn't designed from theory. Every feature inside the software was created to solve a real production problem. Not imagined. Not simulated. Experienced.</p>
+        <div class="story-quote">
+            <span data-en="Every validation rule, every comparison algorithm and every production check exists because at some point someone lost time, money or materials due to a preventable mistake." data-es="Cada regla de validación, cada algoritmo de comparación y cada chequeo de producción existe porque en algún momento alguien perdió tiempo, dinero o materiales por un error evitable.">Every validation rule, every comparison algorithm and every production check exists because at some point someone lost time, money or materials due to a preventable mistake.</span>
+        </div>
+    </div>
+</section>
+
+<section class="section mistake-section">
+    <div class="reveal">
+        <div class="mistake-number">6000</div>
+        <div class="mistake-text">
+            <span data-en="One mistake." data-es="Un error.">One mistake.</span><br>
+            <span class="em" data-en="6000 wasted garments." data-es="6000 prendas desperdiciadas.">6000 wasted garments.</span><br>
+            <span class="safe" data-en="Or one verification. Zero surprises." data-es="O una verificación. Cero sorpresas.">Or one verification. Zero surprises.</span>
+        </div>
+        <div class="mistake-divider"></div>
+        <p class="section-desc" style="margin:0 auto;" data-en="A missing overprint. Invisible on screen. Detected before production. That's what HRP is built for." data-es="Un overprint faltante. Invisible en pantalla. Detectado antes de la producción. Para eso está construido HRP.">A missing overprint. Invisible on screen. Detected before production. That's what HRP is built for.</p>
+    </div>
+</section>
+
+<section class="section gallery-section" id="gallery">
+    <div class="reveal">
+        <div class="eyebrow" data-en="Software in Action" data-es="Software en Acción">Software in Action</div>
+        <h2 class="section-h2">
+            <span data-en="What you see" data-es="Lo que ves">What you see</span><br>
+            <span class="em" data-en="is what you print." data-es="es lo que imprimes.">is what you print.</span>
+        </h2>
+        <p class="section-desc" data-en="Interface designed for the shop floor: direct information, no unnecessary steps, with the preview always in view." data-es="Interfaz diseñada para el piso de producción: información directa, sin pasos innecesarios, con el previsualizador siempre a la vista.">Interface designed for the shop floor: direct information, no unnecessary steps, with the preview always in view.</p>
+    </div>
+    <div class="gallery-grid">
+        <div class="gallery-item reveal reveal-d1">
+            <div class="gallery-placeholder visual-slot-content"><div class="gallery-placeholder-icon">▧</div><div class="gallery-placeholder-label" data-en="RIP Panel — Coming Soon" data-es="Panel RIP — Próximamente">Screenshot — RIP Panel</div></div>
+            <div class="gallery-caption">
+                <strong data-en="Separation Panel" data-es="Panel de Separación">Separation Panel</strong>
+                <span data-en="Load your PDF, adjust frequencies and run full separation in seconds." data-es="Carga tu PDF, ajusta frecuencias y ejecuta la separación completa en segundos.">Load your PDF, adjust frequencies and run full separation in seconds.</span>
+            </div>
+        </div>
+        <div class="gallery-item reveal reveal-d2">
+            <div class="gallery-placeholder visual-slot-content"><div class="gallery-placeholder-icon">▧</div><div class="gallery-placeholder-label" data-en="Layer Preview — Coming Soon" data-es="Previsualizador — Próximamente">Screenshot — Layer Preview</div></div>
+            <div class="gallery-caption">
+                <strong data-en="Layer Preview" data-es="Previsualizador de Capas">Layer Preview</strong>
+                <span data-en="Review each plate individually or in composite with real garment color." data-es="Revisa cada placa individualmente o en composite con el color de prenda real.">Review each plate individually or in composite with real garment color.</span>
+            </div>
+        </div>
+        <div class="gallery-item reveal reveal-d3">
+            <div class="gallery-placeholder visual-slot-content"><div class="gallery-placeholder-icon">▧</div><div class="gallery-placeholder-label" data-en="Screenshot — Visual Analysis" data-es="Screenshot — Análisis Visual">Screenshot — Visual Analysis</div></div>
+            <div class="gallery-caption">
+                <strong data-en="Difference Analysis" data-es="Análisis de Diferencias">Difference Analysis</strong>
+                <span data-en="Visual map of errors between composite and original before printing." data-es="Mapa visual de errores entre composite y original antes de imprimir.">Visual map of errors between composite and original before printing.</span>
+            </div>
+        </div>
+        <div class="gallery-item reveal reveal-d1">
+            <div class="gallery-placeholder visual-slot-content"><div class="gallery-placeholder-icon">▧</div><div class="gallery-placeholder-label" data-en="Screenshot — ASE Libraries" data-es="Screenshot — Bibliotecas ASE">Screenshot — ASE Libraries</div></div>
+            <div class="gallery-caption">
+                <strong data-en="Color Libraries" data-es="Bibliotecas de Color">Color Libraries</strong>
+                <span data-en="Import ASE swatches and maintain consistent color naming across jobs." data-es="Importa muestras ASE y mantén nombres de color consistentes entre trabajos.">Import ASE swatches and maintain consistent color naming across jobs.</span>
+            </div>
+        </div>
+        <div class="gallery-item reveal reveal-d2">
+            <div class="gallery-placeholder visual-slot-content"><div class="gallery-placeholder-icon">▧</div><div class="gallery-placeholder-label" data-en="Production Report — Coming Soon" data-es="Reporte de Producción — Próximamente">Screenshot — Production Report</div></div>
+            <div class="gallery-caption">
+                <strong data-en="Production Report" data-es="Reporte de Producción">Production Report</strong>
+                <span data-en="Clear, actionable preflight results in production language, not jargon." data-es="Resultados de preflight claros y accionables en lenguaje de producción, no jerga.">Clear, actionable preflight results in production language, not jargon.</span>
+            </div>
+        </div>
+        <div class="gallery-item reveal reveal-d3">
+            <div class="gallery-placeholder visual-slot-content"><div class="gallery-placeholder-icon">▧</div><div class="gallery-placeholder-label" data-en="Visual Integrity — Coming Soon" data-es="Integridad Visual — Próximamente">Screenshot — Visual Integrity</div></div>
+            <div class="gallery-caption">
+                <strong data-en="Visual Integrity Map" data-es="Mapa de Integridad Visual">Visual Integrity Map</strong>
+                <span data-en="Side-by-side comparison with highlighted differences before you print." data-es="Comparación lado a lado con diferencias resaltadas antes de imprimir.">Side-by-side comparison with highlighted differences before you print.</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section roadmap-section">
+    <div class="reveal">
+        <div class="eyebrow" data-en="Designed to Grow" data-es="Diseñado para Crecer">Designed to Grow</div>
+        <h2 class="section-h2">
+            <span data-en="Today's release." data-es="El lanzamiento de hoy.">Today's release.</span><br>
+            <span class="em" data-en="Tomorrow's platform." data-es="La plataforma de mañana.">Tomorrow's platform.</span>
+        </h2>
+        <p class="section-desc" data-en="HRP is built around independent engines. That architecture allows the software to evolve without becoming increasingly difficult to maintain." data-es="HRP está construido alrededor de motores independientes. Esa arquitectura permite que el software evolucione sin volverse cada vez más difícil de mantener.">HRP is built around independent engines. That architecture allows the software to evolve without becoming increasingly difficult to maintain.</p>
+    </div>
+    <div class="roadmap-grid reveal reveal-d2">
+        <div class="roadmap-col today">
+            <h4 data-en="Today's Release" data-es="Lanzamiento de Hoy">Today's Release</h4>
+            <div class="roadmap-list">
+                <div class="roadmap-item" data-en="Separation Analysis Engine" data-es="Motor de Análisis de Separación">Separation Analysis Engine</div>
+                <div class="roadmap-item" data-en="Knowledge Engine with ASE support" data-es="Knowledge Engine con soporte ASE">Knowledge Engine with ASE support</div>
+                <div class="roadmap-item" data-en="Visual Integrity Engine™" data-es="Visual Integrity Engine™">Visual Integrity Engine™</div>
+                <div class="roadmap-item" data-en="Professional Halftone Engine" data-es="Motor de Semitono Profesional">Professional Halftone Engine</div>
+                <div class="roadmap-item" data-en="Confidence Score™" data-es="Confidence Score™">Confidence Score™</div>
+                <div class="roadmap-item" data-en="Smart White Base detection" data-es="Detección inteligente de Base Blanca">Smart White Base detection</div>
+            </div>
+        </div>
+        <div class="roadmap-col tomorrow">
+            <h4 data-en="Coming Next" data-es="Próximamente">Coming Next</h4>
+            <div class="roadmap-list">
+                <div class="roadmap-item" data-en="Native Windows installer (.exe)" data-es="Instalador nativo de Windows (.exe)">Native Windows installer (.exe)</div>
+                <div class="roadmap-item" data-en="License &amp; trial period system" data-es="Sistema de licencias y periodo de prueba">License &amp; trial period system</div>
+                <div class="roadmap-item" data-en="Dot gain calibration profiles" data-es="Perfiles de calibración de ganancia de punto">Dot gain calibration profiles</div>
+                <div class="roadmap-item" data-en="Halftone RIP Fast companion tool" data-es="Herramienta complementaria Halftone RIP Fast">Halftone RIP Fast companion tool</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section specs-section" id="specs">
+    <div class="reveal">
+        <div class="eyebrow" data-en="Technical Specifications" data-es="Especificaciones Técnicas">Technical Specifications</div>
+        <h2 class="section-h2">
+            <span data-en="Numbers that" data-es="Números que">Numbers that</span><br>
+            <span class="em" data-en="matter" data-es="importan">matter</span>
+            <span data-en="in production." data-es="en producción.">in production.</span>
+        </h2>
+    </div>
+    <div class="specs-grid">
+        <div class="spec-cell reveal reveal-d1">
+            <div class="spec-cell-head">
+                <span class="spec-tag">01</span>
+                <div class="spec-cell-title" data-en="Input Formats" data-es="Formatos de Entrada">Input Formats</div>
+            </div>
+            <div class="spec-data">
+                <strong>PDF</strong> standard and pre-separated<br>
+                <strong>PostScript</strong> with named spot channels<br>
+                <strong>CMYK + Spot Colors</strong> in a single file<br>
+                Input resolution: up to <strong>2400 DPI</strong><br>
+                <span data-en="No file size limit" data-es="Sin límite de tamaño de archivo">No file size limit</span>
+            </div>
+        </div>
+        <div class="spec-cell reveal reveal-d2">
+            <div class="spec-cell-head">
+                <span class="spec-tag">02</span>
+                <div class="spec-cell-title" data-en="Halftone & Screening" data-es="Semitono y Trama">Halftone & Screening</div>
+            </div>
+            <div class="spec-data">
+                <strong>Cosine spot functions</strong> — continuous precision<br>
+                Automatic angles: <strong>C:15° M:75° Y:0° K:45°</strong><br>
+                Shapes: <strong>Round · Ellipse · Line · Square · Diamond</strong><br>
+                LPI range: <strong>35–65 LPI</strong> textile · custom per channel<br>
+                9 plates at 600 DPI: <strong>~2 min</strong> on standard PC
+            </div>
+        </div>
+        <div class="spec-cell reveal reveal-d3">
+            <div class="spec-cell-head">
+                <span class="spec-tag">03</span>
+                <div class="spec-cell-title" data-en="Channels & Colors" data-es="Canales y Colores">Channels & Colors</div>
+            </div>
+            <div class="spec-data">
+                Up to <strong>7 simultaneous channels</strong> per job<br>
+                Name resolution in <strong>English, Spanish, Portuguese</strong><br>
+                Importable/exportable <strong>color library</strong> (ASE)<br>
+                Underbase detection and <strong>highlight channels</strong><br>
+                <strong>Undefined color</strong> management with configurable policy
+            </div>
+        </div>
+        <div class="spec-cell reveal reveal-d4">
+            <div class="spec-cell-head">
+                <span class="spec-tag">04</span>
+                <div class="spec-cell-title" data-en="Analysis & Export" data-es="Análisis y Exportación">Analysis & Export</div>
+            </div>
+            <div class="spec-data">
+                <strong>Visual composite analysis</strong> vs. original<br>
+                Auto-alignment by <strong>correlation</strong><br>
+                Difference map with <strong>quality score</strong><br>
+                Export: <strong>PNG per plate · ZIP · Production PDF</strong><br>
+                100% offline — <strong>no file ever leaves your PC</strong>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section why-section">
+    <div class="reveal">
+        <div class="eyebrow center" data-en="Why Teams Choose HRP" data-es="Por Qué los Equipos Eligen HRP">Why Teams Choose HRP</div>
+        <h2 class="section-h2" style="text-align:center;margin:0 auto 24px;" data-en="Because mistakes are expensive." data-es="Porque los errores son caros.">Because mistakes are expensive.</h2>
+        <p class="section-desc" style="margin:0 auto;text-align:center;" data-en="HRP isn't trying to replace the operator. It gives the operator better information." data-es="HRP no intenta reemplazar al operador. Le da al operador mejor información.">HRP isn't trying to replace the operator. It gives the operator better information.</p>
+    </div>
+    <div class="why-grid reveal reveal-d2">
+        <div class="why-card">
+            <div class="why-card-icon">💰</div>
+            <h4 data-en="Mistakes Are Expensive" data-es="Los Errores Son Caros">Mistakes Are Expensive</h4>
+            <p data-en="One undetected error can cost thousands in wasted garments, ink, and screen time." data-es="Un error no detectado puede costar miles en prendas desperdiciadas, tinta y tiempo de pantalla.">One undetected error can cost thousands in wasted garments, ink, and screen time.</p>
+        </div>
+        <div class="why-card">
+            <div class="why-card-icon">⏱️</div>
+            <h4 data-en="Production Time Matters" data-es="El Tiempo de Producción Importa">Production Time Matters</h4>
+            <p data-en="Every minute spent fixing a problem on press is a minute not spent printing revenue." data-es="Cada minuto dedicado a arreglar un problema en la prensa es un minuto que no se dedica a imprimir ingresos.">Every minute spent fixing a problem on press is a minute not spent printing revenue.</p>
+        </div>
+        <div class="why-card">
+            <div class="why-card-icon">🤝</div>
+            <h4 data-en="Customer Confidence Matters" data-es="La Confianza del Cliente Importa">Customer Confidence Matters</h4>
+            <p data-en="Delivering consistent, verified results builds trust that turns into repeat business." data-es="Entregar resultados consistentes y verificados construye confianza que se convierte en negocio recurrente.">Delivering consistent, verified results builds trust that turns into repeat business.</p>
+        </div>
+        <div class="why-card">
+            <div class="why-card-icon">📐</div>
+            <h4 data-en="Consistency Matters" data-es="La Consistencia Importa">Consistency Matters</h4>
+            <p data-en="Same colors, same names, same results — across operators, shifts, and locations." data-es="Mismos colores, mismos nombres, mismos resultados — entre operadores, turnos y ubicaciones.">Same colors, same names, same results — across operators, shifts, and locations.</p>
+        </div>
+        <div class="why-card">
+            <div class="why-card-icon">🎯</div>
+            <h4 data-en="Every Print Matters" data-es="Cada Impresión Importa">Every Print Matters</h4>
+            <p data-en="Whether it's 50 pieces or 50,000, the first print should look exactly like the approved artwork." data-es="Ya sean 50 piezas o 50,000, la primera impresión debe verse exactamente como el arte aprobado.">Whether it's 50 pieces or 50,000, the first print should look exactly like the approved artwork.</p>
+        </div>
+        <div class="why-card">
+            <div class="why-card-icon">🛡️</div>
+            <h4 data-en="Confidence Before Production" data-es="Confianza Antes de Producir">Confidence Before Production</h4>
+            <p data-en="Instead of discovering problems after screens have been exposed, discover them while they're still easy to fix." data-es="En lugar de descubrir problemas después de que las pantallas han sido expuestas, descúbrelos mientras aún son fáciles de arreglar.">Instead of discovering problems after screens have been exposed, discover them while they're still easy to fix.</p>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section" id="access">
+    <div class="reveal">
+        <div class="eyebrow center" data-en="Join the Beta" data-es="Únete a la Beta">Join the Beta</div>
+        <h2 class="cta-h2">
+            <span data-en="Ready for" data-es="Listo para">Ready for</span>
+            <em class="em" data-en="zero surprises?" data-es="cero sorpresas?">zero surprises?</em>
+        </h2>
+        <p class="cta-desc" data-en="Available as a Windows installer. No subscriptions, no cloud, no job limit. Your production, on your PC, under your control." data-es="Disponible como instalador para Windows. Sin suscripciones, sin nube, sin límite de trabajos. Tu producción, en tu PC, bajo tu control.">Available as a Windows installer. No subscriptions, no cloud, no job limit. Your production, on your PC, under your control.</p>
+        <a href="mailto:info@halftoneripro.com?subject=Beta Access Request" class="btn-primary" style="font-size:0.75rem;padding:20px 48px;" data-en="✉ REQUEST BETA ACCESS" data-es="✉ SOLICITAR ACCESO BETA">✉ REQUEST BETA ACCESS</a>
+        <div class="cta-meta">
+            <span data-en="15-day free trial" data-es="15 días gratis">15 días gratis / 15-day free trial</span>
+            <span>·</span>
+            <span data-en="Windows 10 / 11 × 64" data-es="Windows 10 / 11 × 64">Windows 10 / 11 × 64</span>
+            <span>·</span>
+            <span data-en="100% Offline" data-es="100% Offline">100% Offline</span>
+            <span>·</span>
+            <span data-en="Beta Stable v0.4.17" data-es="Beta Estable v0.4.17">Beta Estable v0.4.17</span>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="footer-top">
+        <div class="footer-brand-block">
+            <img class="footer-logo" src="HRP-01.png" alt="Halftone RIP Pro">
+            <div class="footer-brand">HALFTONE <em>RIP</em> PRO</div>
+            <div class="footer-tagline" data-en="Print with Confidence." data-es="Imprima con Confianza.">Print with Confidence.</div>
+        </div>
+        <div class="footer-nav">
+            <div class="footer-nav-col">
+                <h5 data-en="Product" data-es="Producto">Product</h5>
+                <a href="#features" data-en="Features" data-es="Características">Features</a>
+                <a href="#specs" data-en="Specifications" data-es="Especificaciones">Specifications</a>
+                <a href="#roadmap" data-en="Roadmap" data-es="Roadmap">Roadmap</a>
+                <a href="#" data-en="Release Notes" data-es="Notas de Versión">Release Notes</a>
+            </div>
+            <div class="footer-nav-col">
+                <h5 data-en="Resources" data-es="Recursos">Resources</h5>
+                <a href="#" data-en="Documentation" data-es="Documentación">Documentation</a>
+                <a href="#" data-en="Knowledge Base" data-es="Base de Conocimiento">Knowledge Base</a>
+                <a href="#" data-en="Video Tutorials" data-es="Video Tutoriales">Video Tutorials</a>
+            </div>
+            <div class="footer-nav-col">
+                <h5 data-en="Company" data-es="Empresa">Company</h5>
+                <a href="#" data-en="About" data-es="Acerca de">About</a>
+                <a href="#" data-en="Contact" data-es="Contacto">Contact</a>
+                <a href="#access" data-en="Request Access" data-es="Solicitar Acceso">Request Access</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div class="footer-copy" data-en="© 2026 · Designed for real screen printers · v0.4.17" data-es="© 2026 · Diseñado para serigrafistas reales · v0.4.17">© 2026 · Diseñado para serigrafistas reales · v0.4.17</div>
+        <div class="footer-copy" data-en="Professional prepress software for textile screen printing" data-es="Software de preprensa profesional para serigrafía textil">Professional prepress software for textile screen printing</div>
+    </div>
+</footer>
+
+<script>
+// ── HERO CANVAS — halftone dots reacting to mouse ──
+const canvas = document.getElementById('heroCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, dots = [], mouse = {x:-9999,y:-9999}, t = 0;
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    initDots();
+}
+
+function initDots() {
+    dots = [];
+    const sp = 40;
+    for (let i = 0; i < Math.ceil(W/sp)+2; i++) {
+        for (let j = 0; j < Math.ceil(H/sp)+2; j++) {
+            dots.push({
+                x: i*sp + sp/2, y: j*sp + sp/2,
+                baseR: Math.random()*1.6 + 0.4,
+                phase: Math.random()*Math.PI*2,
+                speed: 0.2 + Math.random()*0.35
+            });
+        }
+    }
+}
+
+function draw() {
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, W, H);
+    t += 0.012;
+
+    for (const d of dots) {
+        const dx = mouse.x - d.x, dy = mouse.y - d.y;
+        const dist = Math.hypot(dx, dy);
+        let r = d.baseR;
+        if (dist < 200) r += (1 - dist/200) * 10;
+        r += Math.sin(t*d.speed + d.phase) * 1.0;
+
+        const ratio = d.x / W;
+        const h = 18 + ratio * 18;
+        const s = 88, l = 52;
+        const alpha = 0.1 + Math.sin(t*d.speed + d.phase)*0.05;
+
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, Math.max(0.3, r), 0, Math.PI*2);
+        ctx.fillStyle = `hsla(${h},${s}%,${l}%,${alpha})`;
+        ctx.fill();
+    }
+    requestAnimationFrame(draw);
+}
+
+window.addEventListener('resize', resize);
+window.addEventListener('mousemove', e => { mouse.x=e.clientX; mouse.y=e.clientY; });
+resize(); draw();
+
+// ── PROGRESS BAR & NAV ──
+const pb = document.getElementById('progressBar');
+const nav = document.getElementById('mainNav');
+const heroContent = document.querySelector('.hero-content');
+
+window.addEventListener('scroll', () => {
+    const sy = window.scrollY;
+    const dh = document.documentElement.scrollHeight - window.innerHeight;
+    pb.style.width = (sy/dh*100) + '%';
+    nav.classList.toggle('visible', sy > window.innerHeight * 0.35);
+    if (sy < window.innerHeight) {
+        heroContent.style.transform = `translateY(${sy*0.25}px)`;
+        heroContent.style.opacity = 1 - (sy/window.innerHeight)*0.7;
+    }
+});
+
+// ── SCROLL REVEAL ──
+const tb = document.getElementById('terminalBody');
+let tbAnimated = false;
+
+const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            if (e.target.querySelector && e.target.querySelector('#terminalBody') && !tbAnimated) {
+                tb.classList.add('animated'); tbAnimated = true;
+            }
+        }
+    });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ── SMOOTH SCROLL ──
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        e.preventDefault();
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+// ── LANGUAGE TOGGLE ──
+const langToggle = document.querySelector('.lang-toggle');
+const langSpans = langToggle.querySelectorAll('span');
+let currentLang = 'en';
+
+function setLanguage(lang) {
+    currentLang = lang;
+    langSpans.forEach(s => s.classList.toggle('active', s.dataset.lang === lang));
+    document.querySelectorAll('[data-en][data-es]').forEach(el => {
+        const text = el.getAttribute('data-' + lang);
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = text;
+        } else {
+            el.textContent = text;
+        }
+    });
+    document.documentElement.lang = lang;
+}
+
+langSpans.forEach(s => {
+    s.addEventListener('click', () => setLanguage(s.dataset.lang));
+});
+
+// ── VIDEO EMBED ──
+const VIDEO_URL = '';
+function loadVideo() {
+    if (!VIDEO_URL) {
+        alert(currentLang === 'en' 
+            ? 'Coming soon: replace VIDEO_URL in the script with your YouTube/Vimeo embed URL.' 
+            : 'Próximamente: reemplaza VIDEO_URL en el script con tu URL de embed de YouTube/Vimeo.');
+        return;
+    }
+    const iframe = document.getElementById('videoIframe');
+    const placeholder = document.getElementById('videoPlaceholder');
+    iframe.src = VIDEO_URL;
+    iframe.style.display = 'block';
+    placeholder.style.display = 'none';
+}
+</script>
+
+</body>
+</html>
