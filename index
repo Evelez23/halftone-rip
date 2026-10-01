@@ -73,6 +73,11 @@
             color: var(--chalk);
         }
         .nav-brand em { color: var(--ember); font-style: normal; }
+        .nav-logos { display:flex; align-items:center; gap:14px; }
+        .nav-logo-hrp { display:block; width:138px; height:auto; max-height:28px; object-fit:contain; }
+        .nav-logo-hrf { display:block; width:112px; height:auto; max-height:28px; object-fit:contain; opacity:0.9; }
+        .footer-logo { display:block; width:190px; height:auto; max-height:36px; object-fit:contain; margin-bottom:12px; }
+        @media(max-width:900px) { .nav-logo-hrf { display:none; } .nav-logo-hrp { width:122px; } }
         .nav-group { display: flex; align-items: center; gap: 32px; }
         .nav-links { display: flex; align-items: center; gap: 28px; }
         .nav-link {
@@ -938,7 +943,10 @@
 <div class="progress-bar" id="progressBar"></div>
 
 <nav class="nav" id="mainNav">
-    <div class="nav-brand">HALFTONE <em>RIP</em> PRO</div>
+    <div class="nav-brand nav-logos" aria-label="Halftone RIP Pro and HRF">
+        <img class="nav-logo-hrp" src="HRP-01.png" alt="Halftone RIP Pro">
+        <img class="nav-logo-hrf" src="LOGO%20HRf-01.svg" alt="HRF">
+    </div>
     <div class="nav-group">
         <div class="nav-links">
             <a href="#problem" class="nav-link" data-en="The Problem" data-es="El Problema">The Problem</a>
@@ -1654,6 +1662,7 @@
 <footer class="footer">
     <div class="footer-top">
         <div class="footer-brand-block">
+            <img class="footer-logo" src="HRP-01.png" alt="Halftone RIP Pro">
             <div class="footer-brand">HALFTONE <em>RIP</em> PRO</div>
             <div class="footer-tagline" data-en="Print with Confidence." data-es="Imprima con Confianza.">Print with Confidence.</div>
         </div>
